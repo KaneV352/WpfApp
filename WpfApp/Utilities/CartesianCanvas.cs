@@ -63,14 +63,17 @@ public class CartesianCanvas : Canvas
     public PointSegment AddPoint(Point worldPoint, Brush fill, double size = 2)
     {
         var point = new PointSegment(worldPoint, fill, size);
+        point.PointsChanged += OnSegmentPointsChanged;
         _points.Add(point);
         InvalidateVisual();
         return point;
     }
 
+    // Add a line segment and listen for changes
     public LineSegment AddLine(Point start, Point end, Brush stroke, double thickness = 1)
     {
         var line = new LineSegment(start, end, stroke, thickness);
+        line.PointsChanged += OnSegmentPointsChanged;
         _lines.Add(line);
         InvalidateVisual();
         return line;
@@ -78,9 +81,25 @@ public class CartesianCanvas : Canvas
 
     public void ClearAll()
     {
+        // Unsubscribe from events
+        foreach (var point in _points)
+        {
+            point.PointsChanged -= OnSegmentPointsChanged;
+        }
+        foreach (var line in _lines)
+        {
+            line.PointsChanged -= OnSegmentPointsChanged;
+        }
+        
         _points.Clear();
         _lines.Clear();
         Children.Clear();
+        InvalidateVisual();
+    }
+    
+    private void OnSegmentPointsChanged(object? sender, EventArgs e)
+    {
+        InvalidateVisual();
     }
     
     private void DrawPoints(DrawingContext dc)

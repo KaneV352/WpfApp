@@ -5,34 +5,15 @@ namespace WpfApp.Models;
 
 public class PointSegment : ShapeSegment
 {
-    private Point _worldPoint;
-    private Brush _fill;
-    private double _size;
-
-    public PointSegment(Point worldPoint, Brush fill, double size)
+    public Brush Fill { get; }
+    public double Size { get; }
+    
+    public Point WorldPoint => WorldPoints[0];
+    
+    public PointSegment(Point worldPoint, Brush fill, double size = 2)
     {
-        _worldPoint = worldPoint;
-        _fill = fill;
-        _size = size;
-        
-        WorldPoints.Add(worldPoint);
-    }
-
-    public Point WorldPoint
-    {
-        get => _worldPoint;
-        set { _worldPoint = value; OnPropertyChanged(nameof(WorldPoint)); }
-    }
-
-    public Brush Fill
-    {
-        get => _fill;
-        set { _fill = value; OnPropertyChanged(nameof(Fill)); }
-    }
-
-    public double Size
-    {
-        get => _size;
-        set { _size = value; OnPropertyChanged(nameof(Size)); }
+        WorldPoints = new List<Point> { worldPoint };
+        Fill = fill;
+        Size = size;
     }
 }
