@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
+using WpfApp.Models;
+using LineSegment = WpfApp.Models.LineSegment;
 
 public class CartesianCanvas : Canvas
 {
@@ -39,6 +39,14 @@ public class CartesianCanvas : Canvas
     {
         Loaded += (s, e) => CenterOrigin();
     }
+    
+    protected override void OnRender(DrawingContext dc)
+    {
+        base.OnRender(dc);
+        DrawAxes(dc);
+        DrawLines(dc);
+        DrawPoints(dc);
+    }
 
     protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
     {
@@ -52,16 +60,20 @@ public class CartesianCanvas : Canvas
         Origin = new Point(ActualWidth / 2, ActualHeight / 2);
     }
 
-    public void AddPoint(Point worldPoint, Brush fill, double size = 2)
+    public PointSegment AddPoint(Point worldPoint, Brush fill, double size = 2)
     {
-        _points.Add(new PointSegment(worldPoint, fill, size));
+        var point = new PointSegment(worldPoint, fill, size);
+        _points.Add(point);
         InvalidateVisual();
+        return point;
     }
 
-    public void AddLine(Point start, Point end, Brush stroke, double thickness = 1)
+    public LineSegment AddLine(Point start, Point end, Brush stroke, double thickness = 1)
     {
-        _lines.Add(new LineSegment(start, end, stroke, thickness));
+        var line = new LineSegment(start, end, stroke, thickness);
+        _lines.Add(line);
         InvalidateVisual();
+        return line;
     }
 
     public void ClearAll()
@@ -69,14 +81,6 @@ public class CartesianCanvas : Canvas
         _points.Clear();
         _lines.Clear();
         Children.Clear();
-    }
-
-    protected override void OnRender(DrawingContext dc)
-    {
-        base.OnRender(dc);
-        DrawAxes(dc);
-        DrawLines(dc);
-        DrawPoints(dc);
     }
     
     private void DrawPoints(DrawingContext dc)
@@ -197,7 +201,4 @@ public class CartesianCanvas : Canvas
         for (double y = Origin.Y; y > 0; y -= unit)
             dc.DrawLine(axisPen, new Point(Origin.X - 3, y), new Point(Origin.X + 3, y));
     }
-
-    public record PointSegment(Point WorldPoint, Brush Fill, double Size);
-    public record LineSegment(Point WorldStart, Point WorldEnd, Brush Stroke, double Thickness);
 }

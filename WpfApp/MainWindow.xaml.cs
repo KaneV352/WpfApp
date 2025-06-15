@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+using WpfApp.Models;
 
 namespace WpfApp;
 
@@ -20,11 +21,13 @@ public partial class MainWindow : Window
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         // Draw points
-        canvas.AddPoint(new Point(2, 3), Brushes.Red);    // Point at (2,3)
-        canvas.AddPoint(new Point(-1, -2), Brushes.Blue, 10);  // Point at (-1,-2)
+        var shape1 = new ShapeContainer();
+        shape1.Segments.Add(canvas.AddPoint(new Point(2, 3), Brushes.Red));    // Point at (2,3)
+        shape1.Segments.Add(canvas.AddPoint(new Point(-1, -2), Brushes.Blue, 10));  // Point at (-1,-2)
         
         // Draw lines
-        canvas.AddLine(new Point(0, 0), new Point(5, 5), Brushes.Green);  // Line from origin to (5,5)
-        canvas.AddLine(new Point(-3, 4), new Point(2, -1), Brushes.Purple, 2); // Custom line
+        var shape2 = new ShapeContainer();
+        shape2.Segments.Add(canvas.AddLine(new Point(0, 0), new Point(5, 5), Brushes.Green));  // Line from origin to (5,5)
+        shape2.Segments.Add(canvas.AddLine(new Point(-3, 4), new Point(2, -1), Brushes.Purple, 2)); // Custom line
     }
 }
