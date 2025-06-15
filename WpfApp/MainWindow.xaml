@@ -4,9 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp"
+        xmlns:global="clr-namespace:"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-        <Grid>
-                <Canvas x:Name="MainCanvas" Background="White" Height="300" Width="600"/>
-        </Grid>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <global:CartesianCanvas x:Name="canvas" 
+                                Background="White"
+                                Scale="5"
+                                Grid.Column="0"/>
+    </Grid>
 </Window>
