@@ -1,11 +1,15 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Media;
 
 namespace WpfApp.Models;
 
 public abstract class ShapeSegment : INotifyPropertyChanged
 {
     private List<Point> _worldPoints = new List<Point>();
+    public Brush? Fill { get; set; }
+    public Brush Stroke { get; set; }
+    public double StrokeThickness { get; set; }
     
     public List<Point> WorldPoints
     {

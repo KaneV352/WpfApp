@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using WpfApp.Models;
 using LineSegment = WpfApp.Models.LineSegment;
 
@@ -34,6 +35,7 @@ public class CartesianCanvas : Canvas
 
     private readonly List<PointSegment> _points = new List<PointSegment>();
     private readonly List<LineSegment> _lines = new List<LineSegment>();
+    private readonly List<ShapeSegment> _fillSegments = new List<ShapeSegment>();
 
     public CartesianCanvas()
     {
@@ -46,6 +48,7 @@ public class CartesianCanvas : Canvas
         DrawAxes(dc);
         DrawLines(dc);
         DrawPoints(dc);
+        DrawShapes(dc);
     }
 
     protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
@@ -60,9 +63,9 @@ public class CartesianCanvas : Canvas
         Origin = new Point(ActualWidth / 2, ActualHeight / 2);
     }
 
-    public PointSegment AddPoint(Point worldPoint, Brush fill, double size = 2)
+    public PointSegment AddPoint(Point worldPoint, Brush color, double size = 2)
     {
-        var point = new PointSegment(worldPoint, fill, size);
+        var point = new PointSegment(worldPoint, color, size);
         point.PointsChanged += OnSegmentPointsChanged;
         _points.Add(point);
         InvalidateVisual();
@@ -79,6 +82,14 @@ public class CartesianCanvas : Canvas
         return line;
     }
 
+    public ShapeSegment AddFill(FillSegment fillSegment)
+    {
+        fillSegment.PointsChanged += OnSegmentPointsChanged;
+        _fillSegments.Add(fillSegment);
+        InvalidateVisual();
+        return fillSegment;
+    }
+
     public void ClearAll()
     {
         // Unsubscribe from events
@@ -93,6 +104,7 @@ public class CartesianCanvas : Canvas
         
         _points.Clear();
         _lines.Clear();
+        _fillSegments.Clear();
         Children.Clear();
         InvalidateVisual();
     }
@@ -116,6 +128,26 @@ public class CartesianCanvas : Canvas
         foreach (var line in _lines)
         {
             DrawMidpointLine(dc, line.WorldStart, line.WorldEnd, line.Stroke, line.Thickness);
+        }
+    }
+    
+    private void DrawShapes(DrawingContext dc)
+    {
+        foreach (var shape in _fillSegments)
+        {
+            var points = shape.WorldPoints.Select(WorldToCanvas).ToList();
+            if (points.Count > 2)
+            {
+                var geometry = new StreamGeometry();
+                using (var ctx = geometry.Open())
+                {
+                    ctx.BeginFigure(points[0], true, true);
+                    for (int i = 1; i < points.Count; i++)
+                        ctx.LineTo(points[i], true, false);
+                }
+                geometry.Freeze();
+                dc.DrawGeometry(shape.Fill, null, geometry);
+            }
         }
     }
     

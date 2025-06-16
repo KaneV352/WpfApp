@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Media;
 using WpfApp.Models;
+using WpfApp.Shapes;
 using WpfApp.Utilities;
 
 namespace WpfApp;
@@ -10,7 +11,7 @@ namespace WpfApp;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly List<ShapeSegment> _allSegments = new List<ShapeSegment>();
+    private readonly List<ShapeContainer> _allSegments = new List<ShapeContainer>();
 
     public MainWindow()
     {
@@ -21,27 +22,33 @@ public partial class MainWindow : Window
     
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        // Draw points
-        var point1 = canvas.AddPoint(new Point(2, 3), Brushes.Red);
-        var point2 = canvas.AddPoint(new Point(-1, -2), Brushes.Blue, 10);
-        _allSegments.Add(point1);
-        _allSegments.Add(point2);
+        // // Draw points
+        // var point1 = canvas.AddPoint(new Point(2, 3), Brushes.Red);
+        // var point2 = canvas.AddPoint(new Point(-1, -2), Brushes.Blue, 10);
+        // _allSegments.Add(point1);
+        // _allSegments.Add(point2);
+        //
+        // // Draw lines
+        // var line1 = canvas.AddLine(new Point(0, 0), new Point(5, 5), Brushes.Green);
+        // var line2 = canvas.AddLine(new Point(-3, 4), new Point(2, -1), Brushes.Purple, 2);
+        // _allSegments.Add(line1);
+        // _allSegments.Add(line2);
+        //
+        // // Apply translation to all shapes
+        // TranslateShapes(10, 10);
         
-        // Draw lines
-        var line1 = canvas.AddLine(new Point(0, 0), new Point(5, 5), Brushes.Green);
-        var line2 = canvas.AddLine(new Point(-3, 4), new Point(2, -1), Brushes.Purple, 2);
-        _allSegments.Add(line1);
-        _allSegments.Add(line2);
+        // Draw a rectangle
+        var rectangle = new Rectangle(canvas, new Point(-3, 10), new Point(3, 0), Brushes.Orange, 2,Brushes.LightYellow);
+        _allSegments.Add(rectangle);
         
-        // Apply translation to all shapes
-        TranslateShapes(10, 10);
+        TranslateShapes(10,-10);
     }
     
     private void TranslateShapes(double tx, double ty)
     {
         foreach (var segment in _allSegments)
         {
-            segment.TransformPoints(p => TransformationMatrix.Translate(p, tx, ty));
+            segment.TransformShape(p => TransformationMatrix.Translate(p, tx, ty));
         }
     }
 }
