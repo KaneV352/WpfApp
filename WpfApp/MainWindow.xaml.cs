@@ -41,6 +41,8 @@ public partial class MainWindow : Window
         var rectangle = new Rectangle(canvas, new Point(-3, 10), new Point(3, 0), Brushes.Orange, 2,Brushes.LightYellow);
         _allSegments.Add(rectangle);
         
+        var eclipse = new Eclipse(canvas, new Point(0, 0), 30, 20, Brushes.Pink, 2, Brushes.LightPink);
+        
         TranslateShapes(10,-10);
     }
     
