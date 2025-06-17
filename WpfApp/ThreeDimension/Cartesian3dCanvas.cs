@@ -13,7 +13,7 @@ namespace WpfApp.ThreeDimension
     public class Cartesian3dCanvas : Viewport3D
     {
         // The camera for the scene.
-        private readonly PerspectiveCamera _camera;
+        private readonly PerspectiveCamera _defaultCamera;
         // The ModelVisual3D that holds the axis geometry.
         private readonly ModelVisual3D _axesModel;
         // ModelVisual3D that holds all user-added content
@@ -24,6 +24,9 @@ namespace WpfApp.ThreeDimension
         private readonly Transform3DGroup _transformGroup;
         private readonly AxisAngleRotation3D _rotationX;
         private readonly AxisAngleRotation3D _rotationY;
+        
+        private MatrixTransform3D _shearTransform;
+        public bool IsObliqueProjection { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the Cartesian3dCanvas class.
@@ -31,14 +34,14 @@ namespace WpfApp.ThreeDimension
         public Cartesian3dCanvas()
         {
             // --- Initialize Camera ---
-            _camera = new PerspectiveCamera
+            _defaultCamera = new PerspectiveCamera
             {
                 Position = new Point3D(12, 10, 20),
                 LookDirection = new Vector3D(-8, -5, -15),
                 UpDirection = new Vector3D(0, 1, 0),
                 FieldOfView = 60
             };
-            this.Camera = _camera;
+            this.Camera = _defaultCamera;
 
             // --- Setup Camera Transforms for rotation ---
             _transformGroup = new Transform3DGroup();
@@ -46,7 +49,7 @@ namespace WpfApp.ThreeDimension
             _rotationY = new AxisAngleRotation3D(new Vector3D(1, 0, 0), 0);
             _transformGroup.Children.Add(new RotateTransform3D(_rotationY));
             _transformGroup.Children.Add(new RotateTransform3D(_rotationX));
-            _camera.Transform = _transformGroup;
+            _defaultCamera.Transform = _transformGroup;
 
             // --- Setup Lights ---
             var lights = new ModelVisual3D
@@ -69,6 +72,8 @@ namespace WpfApp.ThreeDimension
 
             // Generate the axes geometry
             CreateAxes();
+            
+            SetCabinetView(); // Set initial view to Cabinet projection
         }
 
         /// <summary>
@@ -81,7 +86,7 @@ namespace WpfApp.ThreeDimension
             double tickSize = 0.2;
             int tickCount = 10;
             double lineThickness = 0.05;
-
+            
             // X-Axis (Red)
             var xAxisMaterial = new DiffuseMaterial(Brushes.Red);
             models.Children.Add(CreateLine(new Point3D(0, 0, 0), new Point3D(axisLength, 0, 0), lineThickness, xAxisMaterial));
@@ -89,7 +94,7 @@ namespace WpfApp.ThreeDimension
             {
                 models.Children.Add(CreateLine(new Point3D(i, -tickSize, 0), new Point3D(i, tickSize, 0), lineThickness, xAxisMaterial));
             }
-
+            
             // Y-Axis (Green)
             var yAxisMaterial = new DiffuseMaterial(Brushes.Green);
             models.Children.Add(CreateLine(new Point3D(0, 0, 0), new Point3D(0, axisLength, 0), lineThickness, yAxisMaterial));
@@ -97,7 +102,7 @@ namespace WpfApp.ThreeDimension
             {
                 models.Children.Add(CreateLine(new Point3D(-tickSize, i, 0), new Point3D(tickSize, i, 0), lineThickness, yAxisMaterial));
             }
-
+            
             // Z-Axis (Blue)
             var zAxisMaterial = new DiffuseMaterial(Brushes.Blue);
             models.Children.Add(CreateLine(new Point3D(0, 0, 0), new Point3D(0, 0, axisLength), lineThickness, zAxisMaterial));
@@ -105,7 +110,7 @@ namespace WpfApp.ThreeDimension
             {
                 models.Children.Add(CreateLine(new Point3D(0, -tickSize, i), new Point3D(0, tickSize, i), lineThickness, zAxisMaterial));
             }
-
+            
             _axesModel.Content = models;
         }
 
@@ -242,6 +247,113 @@ namespace WpfApp.ThreeDimension
         #endregion
 
         #region Camera Controls
+        
+        public void SetCavalierView()
+        {
+            ResetView();
+            ApplyObliqueProjection(shearX: -0.707, shearY: -0.707); // cos(45°)=sin(45°)=0.707
+        }
+
+        public void SetCabinetView()
+        {
+            ResetView();
+            ApplyObliqueProjection(shearX: -0.354, shearY: -0.354); // 0.5 * 0.707
+        }
+
+        private void ApplyObliqueProjection(double shearX, double shearY)
+        {
+            IsObliqueProjection = true;
+    
+            // Create shear matrix
+            Matrix3D shearMatrix = new Matrix3D(
+                1,   0,       0, 0,
+                0,   1,       0, 0,
+                shearX, shearY, 1, 0,
+                0,   0,       0, 1
+            );
+    
+            _shearTransform = new MatrixTransform3D(shearMatrix);
+            _axesModel.Transform = _shearTransform;
+            _contentModel.Transform = _shearTransform;
+    
+            // Set orthographic camera
+            Camera = new OrthographicCamera()
+            {
+                Position = new Point3D(0.5, 0.5, 10),
+                LookDirection = new Vector3D(0, 0, -10),
+                UpDirection = new Vector3D(0, 1, 0),
+                Width = 10,
+            };
+        }
+        
+        private void ResetView()
+        {
+            _axesModel.Transform = Transform3D.Identity;
+            _contentModel.Transform = Transform3D.Identity;
+            IsObliqueProjection = false;
+    
+            if (_axesModel.Content is Model3DGroup group)
+                group.Children.Clear();
+    
+            CreateAxes();
+        }
+
+        public void SetFrontView()
+        {
+            ResetView();;
+            // Remove Z axis 
+            if (_axesModel.Content is Model3DGroup axesGroup)
+            {
+                axesGroup.Children.RemoveAt(2); // Assuming Z-axis is the third child
+            }
+            
+            var frontCamera = new OrthographicCamera()
+            {
+                Position = new Point3D(0.5, 0.5, 10),
+                LookDirection = new Vector3D(0, 0, -10),
+                UpDirection = new Vector3D(0, 1, 0),
+                Width = 5,
+            };
+            Camera = frontCamera;
+        }
+        
+        public void SetTopView()
+        {
+            ResetView();
+            // Remove Y axis 
+            if (_axesModel.Content is Model3DGroup axesGroup)
+            {
+                axesGroup.Children.RemoveAt(1); // Assuming Y-axis is the second child
+            }
+            
+            var topCamera = new OrthographicCamera()
+            {
+                Position = new Point3D(0.5, 10, 0.5),
+                LookDirection = new Vector3D(0, -10, 0),
+                UpDirection = new Vector3D(0, 0, 1),
+                Width = 5,
+            };
+            Camera = topCamera;
+        }
+        
+        public void SetSideView()
+        {
+            ResetView();
+            // Remove X axis 
+            if (_axesModel.Content is Model3DGroup axesGroup)
+            {
+                axesGroup.Children.RemoveAt(0); // Assuming X-axis is the first child
+            }
+            
+            var sideCamera = new OrthographicCamera()
+            {
+                Position = new Point3D(10, 0.5, 0.5),
+                LookDirection = new Vector3D(-10, 0, 0),
+                UpDirection = new Vector3D(0, 1, 0),
+                Width = 5,
+            };
+            Camera = sideCamera;
+        }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
@@ -277,12 +389,12 @@ namespace WpfApp.ThreeDimension
         {
             base.OnMouseWheel(e);
             double zoomFactor = e.Delta > 0 ? 0.9 : 1.1;
-            Point3D currentPos = _camera.Position;
-            Vector3D lookDir = _camera.LookDirection;
+            Point3D currentPos = _defaultCamera.Position;
+            Vector3D lookDir = _defaultCamera.LookDirection;
             lookDir.Normalize();
 
             // Move camera along its look direction
-            _camera.Position = new Point3D(
+            _defaultCamera.Position = new Point3D(
                 currentPos.X - (1 - zoomFactor) * lookDir.X * 10,
                 currentPos.Y - (1 - zoomFactor) * lookDir.Y * 10,
                 currentPos.Z - (1 - zoomFactor) * lookDir.Z * 10
