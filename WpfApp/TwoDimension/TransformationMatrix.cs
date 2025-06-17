@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 
-namespace WpfApp.Utilities;
+namespace WpfApp.TwoDimension;
 
 public static class TransformationMatrix
 {

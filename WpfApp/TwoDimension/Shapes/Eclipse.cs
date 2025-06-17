@@ -1,8 +1,8 @@
 using System.Windows;
 using System.Windows.Media;
-using WpfApp.Models;
+using WpfApp.TwoDimension.Models;
 
-namespace WpfApp.Shapes;
+namespace WpfApp.TwoDimension.Shapes;
 
 public class Eclipse : ShapeContainer
 {

@@ -1,9 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
-using WpfApp.Models;
-using LineSegment = WpfApp.Models.LineSegment;
+using WpfApp.TwoDimension.Models;
+using LineSegment = WpfApp.TwoDimension.Models.LineSegment;
+
+namespace WpfApp.TwoDimension;
 
 public class CartesianCanvas : Canvas
 {

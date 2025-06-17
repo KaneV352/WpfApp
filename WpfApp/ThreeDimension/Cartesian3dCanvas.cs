@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
-namespace WpfApp.Utilities
+namespace WpfApp.ThreeDimension
 {
     /// <summary>
     /// A custom Viewport3D control that displays a Cartesian axis system

@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
 
-namespace WpfApp.Models;
+namespace WpfApp.TwoDimension.Models;
 
 public abstract class ShapeSegment : INotifyPropertyChanged
 {

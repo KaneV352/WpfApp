@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace WpfApp.Models;
+namespace WpfApp.TwoDimension.Models;
 
 public class ShapeContainer
 {
