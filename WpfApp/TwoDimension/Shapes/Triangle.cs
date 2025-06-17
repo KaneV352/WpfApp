@@ -10,11 +10,8 @@ public class Triangle : ShapeContainer
     {
         // // Check triangle inequality
         double a = (point1 - point2).Length;
-        Console.WriteLine(a);
         double b = (point2 - point3).Length;
-        Console.WriteLine(b);
         double c = (point3 - point1).Length;
-        Console.WriteLine(c);
         if (a + b <= c || b + c <= a || c + a <= b)
         {
             throw new ArgumentException("The given points do not form a valid triangle.");
