@@ -6,7 +6,15 @@ namespace WpfApp.TwoDimension.Shapes;
 
 public class Rectangle : ShapeContainer
 {
-    public Rectangle(CartesianCanvas canvas, Point topLeft, Point bottomRight, Brush strokeColor, double thickness = 1, Brush? fillColor = null)
+    private CartesianCanvas canvas2D;
+    private Point point;
+    private double v1;
+    private double v2;
+    private SolidColorBrush green;
+    private int v3;
+    private SolidColorBrush lightGreen;
+
+    public Rectangle(CartesianCanvas canvas, Point topLeft, double v, Point bottomRight, Brush strokeColor, double thickness = 1, Brush? fillColor = null)
     {
         if (topLeft.X > bottomRight.X || topLeft.Y < bottomRight.Y)
         {
@@ -42,5 +50,16 @@ public class Rectangle : ShapeContainer
         var polygon = new FillSegment(points, fillColor, 1, fillColor);
         canvas.AddFill(polygon);
         Segments.Add(polygon);
+    }
+
+    public Rectangle(CartesianCanvas canvas2D, Point point, double v1, double v2, SolidColorBrush green, int v3, SolidColorBrush lightGreen)
+    {
+        this.canvas2D = canvas2D;
+        this.point = point;
+        this.v1 = v1;
+        this.v2 = v2;
+        this.green = green;
+        this.v3 = v3;
+        this.lightGreen = lightGreen;
     }
 }
