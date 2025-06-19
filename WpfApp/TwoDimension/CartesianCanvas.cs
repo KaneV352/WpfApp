@@ -211,7 +211,7 @@ public class CartesianCanvas : Canvas
         ));
     }
 
-    private Point WorldToCanvas(Point worldPoint)
+    public Point WorldToCanvas(Point worldPoint)
     {
         double centerX = ActualWidth / 2;
         double centerY = ActualHeight / 2;
@@ -219,6 +219,16 @@ public class CartesianCanvas : Canvas
         return new Point(
             centerX + (worldPoint.X * Scale),
             centerY - (worldPoint.Y * Scale) // Invert Y for Cartesian
+        );
+    }
+
+    public Point CanvasToWorld(Point canvasPoint)
+    {
+        double centerX = ActualWidth / 2;
+        double centerY = ActualHeight / 2;
+        return new Point(
+            (canvasPoint.X - centerX) / Scale,
+            (centerY - canvasPoint.Y) / Scale
         );
     }
 
