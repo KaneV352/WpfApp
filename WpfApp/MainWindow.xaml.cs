@@ -139,12 +139,18 @@ namespace WpfApp
                         AddInputField("Radius Y:");
                         break;
                     case "Rectangle":
-                        AddInputField("Width:");
-                        AddInputField("Height:");
+                        AddInputField("TopLeft X:");
+                        AddInputField("TopLeft Y:");
+                        AddInputField("BottomRight X:");
+                        AddInputField("BottomRight Y:");
                         break;
                     case "Triangle":
-                        AddInputField("Base:");
-                        AddInputField("Height:");
+                        AddInputField("Point1 X:");
+                        AddInputField("Point1 Y:");
+                        AddInputField("Point2 X:");
+                        AddInputField("Point2 Y:");
+                        AddInputField("Point3 X:");
+                        AddInputField("Point3 Y:");
                         break;
                     case "Sphere":
                         AddInputField("Radius:");
@@ -234,9 +240,9 @@ namespace WpfApp
                 if (InputFieldsPanel.Children[i] is StackPanel panel &&
                     panel.Children[1] is TextBox tb)
                 {
-                    if (!double.TryParse(tb.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val) || val <= 0)
+                    if (!double.TryParse(tb.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
                     {
-                        MessageBox.Show("Vui lòng nhập số dương hợp lệ cho tất cả trường.");
+                        MessageBox.Show("Vui lòng nhập số hợp lệ cho tất cả trường.");
                         return;
                     }
                     values[i] = val;
@@ -253,12 +259,24 @@ namespace WpfApp
                     newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
                     break;
                 case "Rectangle":
-                    newShape = new Rectangle(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Green, 2, Brushes.LightGreen);
+                    if (values.Length < 4)
+                    {
+                        MessageBox.Show("Vui lòng nhập đủ 4 giá trị cho hình chữ nhật.");
+                        return;
+                    }
+                    var topLeft = new Point(values[0], values[1]);
+                    var bottomRight = new Point(values[2], values[3]);
+                    newShape = new Rectangle(canvas2D, topLeft, 0, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
                     break;
                 case "Triangle":
-                    var p1 = new Point(drawX, drawY + values[1]);
-                    var p2 = new Point(drawX + values[0] / 2, drawY);
-                    var p3 = new Point(drawX + values[0], drawY + values[1]);
+                    if (values.Length < 6)
+                    {
+                        MessageBox.Show("Vui lòng nhập đủ 6 giá trị cho hình tam giác.");
+                        return;
+                    }
+                    var p1 = new Point(values[0], values[1]);
+                    var p2 = new Point(values[2], values[3]);
+                    var p3 = new Point(values[4], values[5]);
                     newShape = new WpfApp.TwoDimension.Shapes.Triangle(canvas2D, p1, p2, p3, Brushes.Orange, 2, Brushes.Yellow);
                     break;
                 // 3D shapes: chỉ placeholder
@@ -309,19 +327,5 @@ namespace WpfApp
                 MessageBox.Show("Không có hình nào để xóa.");
             }
         }
-
-        //private void MoveShapeButton_Click(object sender, RoutedEventArgs e)
-        //{
-        //    if (_shapes.Count == 0)
-        //    {
-        //        MessageBox.Show("Không có hình nào để di chuyển.");
-        //        return;
-        //    }
-        //    if (canvas2D == null) return;
-        //    // Di chuyển hình cuối cùng
-        //    var lastShape = _shapes[_shapes.Count - 1];
-        //    lastShape.TransformShape(s => TransformationMatrix.Symmetric(s, new Point(-10,10)));
-        //    canvas2D.InvalidateVisual();
-        //}
     }
 }
