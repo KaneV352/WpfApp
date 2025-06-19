@@ -10,7 +10,7 @@ namespace WpfApp.ThreeDimension
     /// A custom Viewport3D control that displays a Cartesian axis system
     /// and includes built-in camera controls, with APIs for adding points and lines.
     /// </summary>
-    public class Cartesian3dCanvas : Viewport3D
+    public class CartesianCanvas3D : Viewport3D
     {
         // The camera for the scene.
         private readonly PerspectiveCamera _defaultCamera;
@@ -31,7 +31,7 @@ namespace WpfApp.ThreeDimension
         /// <summary>
         /// Initializes a new instance of the Cartesian3dCanvas class.
         /// </summary>
-        public Cartesian3dCanvas()
+        public CartesianCanvas3D()
         {
             // --- Initialize Camera ---
             _defaultCamera = new PerspectiveCamera
@@ -89,26 +89,26 @@ namespace WpfApp.ThreeDimension
             
             // X-Axis (Red)
             var xAxisMaterial = new DiffuseMaterial(Brushes.Red);
-            models.Children.Add(CreateLine(new Point3D(0, 0, 0), new Point3D(axisLength, 0, 0), lineThickness, xAxisMaterial));
+            models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(axisLength, 0, 0), lineThickness, xAxisMaterial));
             for (int i = 1; i <= tickCount; i++)
             {
-                models.Children.Add(CreateLine(new Point3D(i, -tickSize, 0), new Point3D(i, tickSize, 0), lineThickness, xAxisMaterial));
+                models.Children.Add(DrawLine(new Point3D(i, -tickSize, 0), new Point3D(i, tickSize, 0), lineThickness, xAxisMaterial));
             }
             
             // Y-Axis (Green)
             var yAxisMaterial = new DiffuseMaterial(Brushes.Green);
-            models.Children.Add(CreateLine(new Point3D(0, 0, 0), new Point3D(0, axisLength, 0), lineThickness, yAxisMaterial));
+            models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(0, axisLength, 0), lineThickness, yAxisMaterial));
             for (int i = 1; i <= tickCount; i++)
             {
-                models.Children.Add(CreateLine(new Point3D(-tickSize, i, 0), new Point3D(tickSize, i, 0), lineThickness, yAxisMaterial));
+                models.Children.Add(DrawLine(new Point3D(-tickSize, i, 0), new Point3D(tickSize, i, 0), lineThickness, yAxisMaterial));
             }
             
             // Z-Axis (Blue)
             var zAxisMaterial = new DiffuseMaterial(Brushes.Blue);
-            models.Children.Add(CreateLine(new Point3D(0, 0, 0), new Point3D(0, 0, axisLength), lineThickness, zAxisMaterial));
+            models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(0, 0, axisLength), lineThickness, zAxisMaterial));
             for (int i = 1; i <= tickCount; i++)
             {
-                models.Children.Add(CreateLine(new Point3D(0, -tickSize, i), new Point3D(0, tickSize, i), lineThickness, zAxisMaterial));
+                models.Children.Add(DrawLine(new Point3D(0, -tickSize, i), new Point3D(0, tickSize, i), lineThickness, zAxisMaterial));
             }
             
             _axesModel.Content = models;
@@ -117,7 +117,7 @@ namespace WpfApp.ThreeDimension
         /// <summary>
         /// Creates a 3D cuboid to represent a line segment.
         /// </summary>
-        private GeometryModel3D CreateLine(Point3D start, Point3D end, double thickness, Material material)
+        private GeometryModel3D DrawLine(Point3D start, Point3D end, double thickness, Material material)
         {
             var mesh = new MeshGeometry3D();
             
@@ -158,7 +158,7 @@ namespace WpfApp.ThreeDimension
         /// <param name="size">Size (diameter) of the point</param>
         public void AddPoint(Point3D position, Color color, double size = 0.2)
         {
-            var sphere = CreateSphere(position, size / 2, new SolidColorBrush(color));
+            var sphere = DrawPoint(position, size / 2, new SolidColorBrush(color));
             AddToContent(sphere);
         }
 
@@ -171,14 +171,14 @@ namespace WpfApp.ThreeDimension
         /// <param name="thickness">Thickness of the line</param>
         public void AddLine(Point3D start, Point3D end, Color color, double thickness = 0.05)
         {
-            var line = CreateLine(start, end, thickness, new DiffuseMaterial(new SolidColorBrush(color)));
+            var line = DrawLine(start, end, thickness, new DiffuseMaterial(new SolidColorBrush(color)));
             AddToContent(line);
         }
 
         /// <summary>
         /// Creates a sphere geometry
         /// </summary>
-        private GeometryModel3D CreateSphere(Point3D center, double radius, Brush brush)
+        private GeometryModel3D DrawPoint(Point3D center, double radius, Brush brush)
         {
             var mesh = new MeshGeometry3D();
             int stacks = 12, slices = 12;
