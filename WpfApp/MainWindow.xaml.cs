@@ -18,6 +18,11 @@ namespace WpfApp
         private double drawZ = 0; // For 3D mode
         private readonly List<ShapeContainer> _shapes = new();
 
+        // Advanced: For click-to-draw
+        private List<Point> _pendingPoints = new();
+        private int _requiredPoints = 0;
+        private string _pendingShape = null;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -127,6 +132,26 @@ namespace WpfApp
             if (ShapeComboBox.SelectedItem is ComboBoxItem item)
             {
                 string shape = item.Content?.ToString() ?? string.Empty;
+                _pendingPoints.Clear();
+                _pendingShape = shape;
+                switch (shape)
+                {
+                    case "Circle":
+                        _requiredPoints = 2; // Center, point on circle
+                        break;
+                    case "Ellipse":
+                        _requiredPoints = 3; // Center, point on X axis, point on Y axis
+                        break;
+                    case "Rectangle":
+                        _requiredPoints = 2; // Two opposite corners
+                        break;
+                    case "Triangle":
+                        _requiredPoints = 3; // Three points
+                        break;
+                    default:
+                        _requiredPoints = 0;
+                        break;
+                }
                 if (InputFieldsPanel != null)
                     InputFieldsPanel.Children.Clear();
                 switch (shape)
@@ -190,14 +215,86 @@ namespace WpfApp
 
         private void Canvas2D_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (canvas2D == null || CoordXBox == null || CoordYBox == null) return;
+            if (canvas2D == null) return;
             var pos = e.GetPosition(canvas2D);
-
-            // Chuyển từ canvas sang world
             var worldPos = canvas2D.CanvasToWorld(pos);
 
-            CoordXBox.Text = worldPos.X.ToString("0.##", CultureInfo.InvariantCulture);
-            CoordYBox.Text = worldPos.Y.ToString("0.##", CultureInfo.InvariantCulture);
+            // Advanced: click-to-draw mode
+            if (_requiredPoints > 0 && !string.IsNullOrEmpty(_pendingShape))
+            {
+                _pendingPoints.Add(worldPos);
+                // Optionally, show a temporary point
+                canvas2D.AddPoint(worldPos, Brushes.Gray, 3);
+
+                if (_pendingPoints.Count == _requiredPoints)
+                {
+                    DrawShapeFromPoints();
+                    _pendingPoints.Clear();
+                }
+                return;
+            }
+
+            // Default: update coordinate input boxes
+            if (CoordXBox != null)
+                CoordXBox.Text = worldPos.X.ToString("0.##", CultureInfo.InvariantCulture);
+            if (CoordYBox != null)
+                CoordYBox.Text = worldPos.Y.ToString("0.##", CultureInfo.InvariantCulture);
+        }
+
+        private void DrawShapeFromPoints()
+        {
+            ShapeContainer newShape = null;
+            switch (_pendingShape)
+            {
+                case "Circle":
+                    var center = _pendingPoints[0];
+                    var radius = Math.Sqrt(Math.Pow(_pendingPoints[1].X - center.X, 2) + Math.Pow(_pendingPoints[1].Y - center.Y, 2));
+                    if (radius <= 0)
+                    {
+                        MessageBox.Show("Bán kính phải > 0.");
+                        return;
+                    }
+                    newShape = new Circle(canvas2D, center, radius, Brushes.Blue, 2, Brushes.LightBlue);
+                    break;
+                case "Ellipse":
+                    var c = _pendingPoints[0];
+                    var xPoint = _pendingPoints[1];
+                    var yPoint = _pendingPoints[2];
+                    var rx = Math.Abs(xPoint.X - c.X);
+                    var ry = Math.Abs(yPoint.Y - c.Y);
+                    if (rx <= 0 || ry <= 0)
+                    {
+                        MessageBox.Show("Bán trục X và Y phải > 0.");
+                        return;
+                    }
+                    newShape = new Eclipse(canvas2D, c, rx, ry, Brushes.Red, 2, Brushes.LightCoral);
+                    break;
+                case "Rectangle":
+                    var topLeft = _pendingPoints[0];
+                    var bottomRight = _pendingPoints[1];
+                    newShape = new Rectangle(canvas2D, topLeft, 0, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
+                    break;
+                case "Triangle":
+                    var p1 = _pendingPoints[0];
+                    var p2 = _pendingPoints[1];
+                    var p3 = _pendingPoints[2];
+                    newShape = new WpfApp.TwoDimension.Shapes.Triangle(canvas2D, p1, p2, p3, Brushes.Orange, 2, Brushes.Yellow);
+                    break;
+            }
+
+            if (newShape != null)
+            {
+                _shapes.Add(newShape);
+                foreach (var segment in newShape.Segments)
+                {
+                    if (segment is FillSegment fillSegment)
+                        canvas2D.AddFill(fillSegment);
+                    else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
+                        canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
+                    else if (segment is PointSegment pointSegment)
+                        canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
+                }
+            }
         }
 
         private void Canvas2D_Loaded(object sender, RoutedEventArgs e)
@@ -253,9 +350,19 @@ namespace WpfApp
             switch (shape)
             {
                 case "Circle":
+                    if (values.Length < 1 || values[0] <= 0)
+                    {
+                        MessageBox.Show("Bán kính phải > 0.");
+                        return;
+                    }
                     newShape = new Circle(canvas2D, new Point(drawX, drawY), values[0], Brushes.Blue, 2, Brushes.LightBlue);
                     break;
                 case "Ellipse":
+                    if (values.Length < 2 || values[0] <= 0 || values[1] <= 0)
+                    {
+                        MessageBox.Show("Bán trục X và Y phải > 0.");
+                        return;
+                    }
                     newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
                     break;
                 case "Rectangle":
