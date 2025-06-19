@@ -186,8 +186,12 @@ namespace WpfApp
         {
             if (canvas2D == null || CoordXBox == null || CoordYBox == null) return;
             var pos = e.GetPosition(canvas2D);
-            CoordXBox.Text = pos.X.ToString("0.##", CultureInfo.InvariantCulture);
-            CoordYBox.Text = pos.Y.ToString("0.##", CultureInfo.InvariantCulture);
+
+            // Chuyển từ canvas sang world
+            var worldPos = canvas2D.CanvasToWorld(pos);
+
+            CoordXBox.Text = worldPos.X.ToString("0.##", CultureInfo.InvariantCulture);
+            CoordYBox.Text = worldPos.Y.ToString("0.##", CultureInfo.InvariantCulture);
         }
 
         private void Canvas2D_Loaded(object sender, RoutedEventArgs e)
@@ -249,7 +253,7 @@ namespace WpfApp
                     newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
                     break;
                 case "Rectangle":
-                    newShape = new WpfApp.TwoDimension.Shapes.Rectangle(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Green, 2, Brushes.LightGreen);
+                    newShape = new Rectangle(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Green, 2, Brushes.LightGreen);
                     break;
                 case "Triangle":
                     var p1 = new Point(drawX, drawY + values[1]);
@@ -305,5 +309,19 @@ namespace WpfApp
                 MessageBox.Show("Không có hình nào để xóa.");
             }
         }
+
+        //private void MoveShapeButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (_shapes.Count == 0)
+        //    {
+        //        MessageBox.Show("Không có hình nào để di chuyển.");
+        //        return;
+        //    }
+        //    if (canvas2D == null) return;
+        //    // Di chuyển hình cuối cùng
+        //    var lastShape = _shapes[_shapes.Count - 1];
+        //    lastShape.TransformShape(s => TransformationMatrix.Symmetric(s, new Point(-10,10)));
+        //    canvas2D.InvalidateVisual();
+        //}
     }
 }
