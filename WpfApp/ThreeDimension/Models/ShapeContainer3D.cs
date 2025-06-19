@@ -8,9 +8,9 @@ public class ShapeContainer3D
     
     public void TransformShape(Func<Point3D, Point3D> transformation)
     {
-        foreach (var segment in Segments)
+        for (int i = 0; i < Segments.Count; i++)
         {
-            segment.TransformPoints(transformation);
+            Segments[i].TransformPoints(transformation, i == Segments.Count - 1);
         }
     }
 }

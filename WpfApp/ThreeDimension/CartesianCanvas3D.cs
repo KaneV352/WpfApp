@@ -145,6 +145,17 @@ public class CartesianCanvas3D : Viewport3D
     /// </summary>
     public void ClearContent()
     {
+        foreach (var point in _points)
+        {
+            point.PropertyChanged -= OnSegmentPointsChanged;
+        }
+        foreach (var line in _lines)
+        {
+            line.PropertyChanged -= OnSegmentPointsChanged;
+        }
+        
+        _points.Clear();
+        _lines.Clear();
         if (_contentModel.Content is Model3DGroup group)
         {
             group.Children.Clear();
@@ -208,6 +219,7 @@ public class CartesianCanvas3D : Viewport3D
     
     private void OnSegmentPointsChanged(object? sender, EventArgs e)
     {
+        Console.WriteLine("Segment points changed, updating content model.");
         if (_contentModel.Content is Model3DGroup group)
         {
             group.Children.Clear();

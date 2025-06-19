@@ -20,24 +20,23 @@ public abstract class ShapeSegment : INotifyPropertyChanged
             {
                 _worldPoints = value;
                 OnPropertyChanged(nameof(WorldPoints));
-                OnPointsChanged(); // New method to notify about changes
             }
         }
     }
     
     public event PropertyChangedEventHandler? PropertyChanged;
-    public event EventHandler? PointsChanged; // New event for point changes
     
     protected void OnPropertyChanged(string name) => 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     
-    protected void OnPointsChanged() => 
-        PointsChanged?.Invoke(this, EventArgs.Empty);
-    
     // Helper method to transform all points
-    public void TransformPoints(Func<Point, Point> transformation)
+    public void TransformPoints(Func<Point, Point> transformation, bool notify = false)
     {
         var newPoints = WorldPoints.Select(transformation).ToList();
         WorldPoints = newPoints;
+        if (notify)
+        {
+            OnPropertyChanged(nameof(WorldPoints));
+        }
     }
 }

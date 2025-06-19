@@ -14,7 +14,6 @@ public abstract class ShapeSegment3D
         set
         {
             _worldPoints = value;
-            OnPropertyChanged(); // Notify when world points change
         }
     }
     
@@ -51,9 +50,11 @@ public abstract class ShapeSegment3D
     }
     
     // Helper method to transform all points in the segment
-    public void TransformPoints(Func<Point3D, Point3D> transformation)
+    public void TransformPoints(Func<Point3D, Point3D> transformation, bool notify = false)
     {
         var newPoints = WorldPoints.Select(transformation).ToList();
         WorldPoints = newPoints;
+        if (notify)
+            OnPropertyChanged(); // Notify when world points change
     }
 }
