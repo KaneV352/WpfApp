@@ -5,6 +5,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using WpfApp.ThreeDimension;
+using WpfApp.ThreeDimension.Models;
+using WpfApp.ThreeDimension.Shapes;
 using WpfApp.TwoDimension;
 using WpfApp.TwoDimension.Models;
 using WpfApp.TwoDimension.Shapes;
@@ -316,6 +320,42 @@ namespace WpfApp
                 new Point(width / 2, 0),
                 new Point(width / 2, height),
                 Brushes.Gray, 1);
+        }
+
+        private void Canvas3D_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (canvas3D == null) return;
+
+            canvas3D.ClearContent();
+
+            // Vẽ trục X (đỏ)
+            canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(10, 0, 0), Colors.Red, 0.1);
+
+            // Vẽ trục Y (xanh lá)
+            canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(0, 10, 0), Colors.Green, 0.1);
+
+            // Vẽ trục Z (xanh dương)
+            canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(0, 0, 10), Colors.Blue, 0.1);
+
+            // Vẽ các tick nhỏ trên trục
+            double tickSize = 0.2;
+            int tickCount = 10;
+            for (int i = 1; i <= tickCount; i++)
+            {
+                canvas3D.AddLine(new Point3D(i, -tickSize, 0), new Point3D(i, tickSize, 0), Colors.Red, 0.05);
+                canvas3D.AddLine(new Point3D(-tickSize, i, 0), new Point3D(tickSize, i, 0), Colors.Green, 0.05);
+                canvas3D.AddLine(new Point3D(0, -tickSize, i), new Point3D(0, tickSize, i), Colors.Blue, 0.05);
+            }
+
+
+            //test obj
+            //var cube = new Cube(canvas3D, new Point3D(0, 0, 0), 1, Colors.Blue);
+            var cuboid = new Cuboid(canvas3D, new Point3D(0, 0, 0), 1, 2, 3, Colors.Teal);
+            //var sphere = new Sphere(canvas3D, new Point3D(0, 2, 2), 1, Colors.Red);
+            //var cylinder = new Cylinder(canvas3D, new Point3D(0, 0, 0), 1, 2, Colors.Green);
+            //var pyramid = new Pyramid(canvas3D, new Point3D(0, 0, 0), 1, 1, 2, Colors.Orange);
+
+
         }
 
         private void AddShape_Click(object sender, RoutedEventArgs e)
