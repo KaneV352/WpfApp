@@ -6,42 +6,44 @@
         xmlns:td3="clr-namespace:WpfApp.ThreeDimension"
         Title="Shape Drawer" Height="600" Width="900">
     <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-            <ToggleButton x:Name="Mode2DButton" Content="2D" Width="60" Margin="0,0,10,0"
-                          Checked="Mode2DButton_Checked" Unchecked="Mode2DButton_Unchecked"/>
-            <ToggleButton x:Name="Mode3DButton" Content="3D" Width="60"
-                          Checked="Mode3DButton_Checked" Unchecked="Mode3DButton_Unchecked"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,10">
-            <ComboBox x:Name="ShapeComboBox" Width="120" SelectionChanged="ShapeComboBox_SelectionChanged">
-                <ComboBoxItem Content="Circle" Tag="2D"/>
-                <ComboBoxItem Content="Ellipse" Tag="2D"/>
-                <ComboBoxItem Content="Rectangle" Tag="2D"/>
-                <ComboBoxItem Content="Triangle" Tag="2D"/>
-                <ComboBoxItem Content="Sphere" Tag="3D"/>
-                <ComboBoxItem Content="Cube" Tag="3D"/>
-                <ComboBoxItem Content="Pyramid" Tag="3D"/>
-            </ComboBox>
-            <StackPanel x:Name="CoordPanel" Orientation="Horizontal" Margin="10,0,0,0">
-                <TextBlock Text="X:" VerticalAlignment="Center"/>
-                <TextBox x:Name="CoordXBox" Width="50" Margin="5,0,0,0" TextChanged="CoordBox_TextChanged"/>
-                <TextBlock Text="Y:" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                <TextBox x:Name="CoordYBox" Width="50" Margin="5,0,0,0" TextChanged="CoordBox_TextChanged"/>
-            </StackPanel>
-            <StackPanel x:Name="InputFieldsPanel" Orientation="Horizontal" Margin="10,0,0,0"/>
-            <Button Content="Thêm hình" Margin="10,0,0,0" Click="AddShape_Click"/>
-            <Button Content="Xóa hình" Margin="5,0,0,0" Click="DeleteShapeButton_Click"/>
-        </StackPanel>
-        <Grid Grid.Row="2">
+
+        <Grid>
             <td:CartesianCanvas x:Name="canvas2D" Background="White"
                                 MouseLeftButtonDown="Canvas2D_MouseLeftButtonDown"
                                 Loaded="Canvas2D_Loaded"/>
             <td3:CartesianCanvas3D x:Name="canvas3D" Visibility="Collapsed" Loaded="Canvas3D_Loaded"/>
         </Grid>
+
+        <Border Background="#80FFFFFF" Panel.ZIndex="10" CornerRadius="8" Padding="8"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <ToggleButton x:Name="Mode2DButton" Content="2D" Width="60" Margin="0,0,10,0"
+                                  Checked="Mode2DButton_Checked" Unchecked="Mode2DButton_Unchecked"/>
+                    <ToggleButton x:Name="Mode3DButton" Content="3D" Width="60"
+                                  Checked="Mode3DButton_Checked" Unchecked="Mode3DButton_Unchecked"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <ComboBox x:Name="ShapeComboBox" Width="120" SelectionChanged="ShapeComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Circle" Tag="2D"/>
+                        <ComboBoxItem Content="Ellipse" Tag="2D"/>
+                        <ComboBoxItem Content="Rectangle" Tag="2D"/>
+                        <ComboBoxItem Content="Triangle" Tag="2D"/>
+                        <ComboBoxItem Content="Sphere" Tag="3D"/>
+                        <ComboBoxItem Content="Cube" Tag="3D"/>
+                        <ComboBoxItem Content="Pyramid" Tag="3D"/>
+                    </ComboBox>
+                    <StackPanel x:Name="CoordPanel" Orientation="Horizontal" Margin="10,0,0,0">
+                        <TextBlock Text="X:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="CoordXBox" Width="50" Margin="5,0,0,0" TextChanged="CoordBox_TextChanged"/>
+                        <TextBlock Text="Y:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <TextBox x:Name="CoordYBox" Width="50" Margin="5,0,0,0" TextChanged="CoordBox_TextChanged"/>
+                    </StackPanel>
+                    <StackPanel x:Name="InputFieldsPanel" Orientation="Horizontal" Margin="10,0,0,0"/>
+                    <Button Content="Thêm hình" Margin="10,0,0,0" Click="AddShape_Click"/>
+                    <Button Content="Xóa hình" Margin="5,0,0,0" Click="DeleteShapeButton_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>
