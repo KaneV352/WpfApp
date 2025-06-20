@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:WpfApp"
         xmlns:td="clr-namespace:WpfApp.TwoDimension"
+        xmlns:td3="clr-namespace:WpfApp.ThreeDimension"
         Title="Shape Drawer" Height="600" Width="900">
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -40,9 +41,7 @@
             <td:CartesianCanvas x:Name="canvas2D" Background="White"
                                 MouseLeftButtonDown="Canvas2D_MouseLeftButtonDown"
                                 Loaded="Canvas2D_Loaded"/>
-            <Border x:Name="canvas3DPlaceholder" Background="#EEE" Visibility="Collapsed">
-                <TextBlock Text="3D Placeholder" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
-            </Border>
+            <td3:CartesianCanvas3D x:Name="canvas3D" Visibility="Collapsed" Loaded="Canvas3D_Loaded"/>
         </Grid>
     </Grid>
 </Window>
