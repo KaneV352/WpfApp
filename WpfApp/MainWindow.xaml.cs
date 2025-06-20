@@ -434,5 +434,25 @@ namespace WpfApp
                 MessageBox.Show("Không có hình nào để xóa.");
             }
         }
+        private void RedrawAllShapes()
+        {
+            if (canvas2D == null)
+                return;
+
+            canvas2D.ClearAll(); // Xóa tất cả hình đang hiển thị
+
+            foreach (var shape in _shapes)
+            {
+                foreach (var segment in shape.Segments)
+                {
+                    if (segment is FillSegment fillSegment)
+                        canvas2D.AddFill(fillSegment);
+                    else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
+                        canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
+                    else if (segment is PointSegment pointSegment)
+                        canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
+                }
+            }
+        }
     }
 }
