@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using WpfApp.Animation;
 using WpfApp.TwoDimension;
 using WpfApp.TwoDimension.Models;
 using WpfApp.TwoDimension.Shapes;
@@ -434,12 +435,110 @@ namespace WpfApp
                 MessageBox.Show("Không có hình nào để xóa.");
             }
         }
+        private ShapeContainer? GetLastShape()
+        {
+            return _shapes.Count > 0 ? _shapes[^1] : null;
+        }
+
+        private async void TranslateLeft_Click(object sender, RoutedEventArgs e)
+        {
+            var shape = GetLastShape();
+            if (shape != null)
+                await ShapeAnimation.AnimateTranslate(shape, new Vector(-50, 0));
+            RedrawAllShapes();
+        }
+
+        private async void TranslateRight_Click(object sender, RoutedEventArgs e)
+        {
+            var shape = GetLastShape();
+            if (shape != null)
+                await ShapeAnimation.AnimateTranslate(shape, new Vector(50, 0));
+            RedrawAllShapes();
+        }
+
+        private async void TranslateUp_Click(object sender, RoutedEventArgs e)
+        {
+            var shape = GetLastShape();
+            if (shape != null)
+                await ShapeAnimation.AnimateTranslate(shape, new Vector(0, 50));
+        }
+
+        private async void TranslateDown_Click(object sender, RoutedEventArgs e)
+        {
+            var shape = GetLastShape();
+            if (shape != null)
+                await ShapeAnimation.AnimateTranslate(shape, new Vector(0, -50));
+            RedrawAllShapes();
+
+        }
+
+        private async void RotateOrigin_Click(object sender, RoutedEventArgs e)
+        {
+            var shape = GetLastShape();
+            if (shape == null) return;
+
+            var allPoints = shape.Segments.SelectMany(s => s.WorldPoints).ToList();
+            if (allPoints.Count == 0) return;
+
+            double centerX = allPoints.Average(p => p.X);
+            double centerY = allPoints.Average(p => p.Y);
+            Point center = new Point(centerX, centerY);
+
+            await ShapeAnimation.AnimateRotate(shape, center, 360);
+            RedrawAllShapes();
+        }
+
+        private async void RotateAround_Click(object sender, RoutedEventArgs e)
+        {
+            var shape = GetLastShape();
+            if (shape != null)
+                await ShapeAnimation.AnimateRotate(shape, new Point(0, 0), 360);
+            RedrawAllShapes();
+        }
+
+        private async void ScaleUp_Click(object sender, RoutedEventArgs e)
+        {
+            var shape = GetLastShape();
+            if (shape == null) return;
+
+            Point center = GetShapeCenter(shape);
+            await ShapeAnimation.AnimateScale(shape, center, 1.2, 1.2);
+            RedrawAllShapes();
+        }
+
+        private async void ScaleDown_Click(object sender, RoutedEventArgs e)
+        {
+            var shape = GetLastShape();
+            if (shape == null) return;
+
+            Point center = GetShapeCenter(shape);
+            await ShapeAnimation.AnimateScale(shape, center, 0.8, 0.8);
+            RedrawAllShapes();
+
+        }
+        private async void SymmetricButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_shapes.Count == 0) return;
+
+            ShapeContainer shape = _shapes[0];
+            Point symmetricPoint = new Point(0, 0);
+            await ShapeAnimation.AnimateSymmetric(shape, symmetricPoint);
+            RedrawAllShapes();
+        }
+
+        private Point GetShapeCenter(ShapeContainer shape)
+        {
+            var allPoints = shape.Segments.SelectMany(s => s.WorldPoints).ToList();
+            double centerX = allPoints.Average(p => p.X);
+            double centerY = allPoints.Average(p => p.Y);
+            return new Point(centerX, centerY);
+        }
         private void RedrawAllShapes()
         {
             if (canvas2D == null)
                 return;
 
-            canvas2D.ClearAll(); // Xóa tất cả hình đang hiển thị
+            canvas2D.ClearAll(); 
 
             foreach (var shape in _shapes)
             {
