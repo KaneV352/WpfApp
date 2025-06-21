@@ -4,6 +4,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using WpfApp.ThreeDimension.Models;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel; // Required for INotifyPropertyChanged
 
 namespace WpfApp.ThreeDimension;
 
@@ -13,27 +16,26 @@ namespace WpfApp.ThreeDimension;
 /// </summary>
 public class CartesianCanvas3D : Viewport3D
 {
-    // The camera for the scene.
-    // private readonly PerspectiveCamera _defaultCamera;
     // The ModelVisual3D that holds the axis geometry.
     private readonly ModelVisual3D _axesModel;
     // ModelVisual3D that holds all user-added content
     private readonly ModelVisual3D _contentModel;
-    
+
     private List<PointSegment3D> _points = new();
     private List<LineSegment3D> _lines = new();
-        
-    // Fields for camera rotation
-    // private Point _lastMousePosition;
-    private readonly Transform3DGroup _transformGroup;
-    // private readonly AxisAngleRotation3D _rotationX;
-    // private readonly AxisAngleRotation3D _rotationY;
-        
+
     private MatrixTransform3D _shearTransform;
     public bool IsObliqueProjection { get; private set; }
 
+    // Constants for rendering geometry (made private fields for consistency)
     private const int SphereDivisions = 8; // How detailed the sphere is (e.g., 8 for a low-poly sphere)
     private const int LineUnitPerDistance = 20; // How many points to draw per unit distance for lines
+
+    // Axis parameters (made private fields for accessibility across methods)
+    private double _axisLength = 40.0;
+    private double _axisLengthZ = 80.0; // Length of Z-axis
+    private double _tickSize = 0.2;
+    private double _lineThickness = 0.05;
 
 
     /// <summary>
@@ -41,24 +43,6 @@ public class CartesianCanvas3D : Viewport3D
     /// </summary>
     public CartesianCanvas3D()
     {
-        // --- Initialize Camera ---
-        // _defaultCamera = new PerspectiveCamera
-        // {
-        //     Position = new Point3D(12, 10, 20),
-        //     LookDirection = new Vector3D(-8, -5, -15),
-        //     UpDirection = new Vector3D(0, 1, 0),
-        //     FieldOfView = 60
-        // };
-        // this.Camera = _defaultCamera;
-
-        // --- Setup Camera Transforms for rotation ---
-        _transformGroup = new Transform3DGroup();
-        // _rotationX = new AxisAngleRotation3D(new Vector3D(0, 1, 0), 0);
-        // _rotationY = new AxisAngleRotation3D(new Vector3D(1, 0, 0), 0);
-        // _transformGroup.Children.Add(new RotateTransform3D(_rotationY));
-        // _transformGroup.Children.Add(new RotateTransform3D(_rotationX));
-        // _defaultCamera.Transform = _transformGroup;
-
         // --- Setup Lights ---
         var lights = new ModelVisual3D
         {
@@ -77,15 +61,12 @@ public class CartesianCanvas3D : Viewport3D
             Content = new Model3DGroup()
         };
         this.Children.Add(_contentModel);
-
-        // Generate the axes geometry
-        CreateAxes();
-            
+        
         SetCabinetView(); // Set initial view to Cabinet projection
     }
 
     #region Shape Management APIs
-    
+
     public PointSegment3D AddPoint(Point3D position, Color color, double size = 0.1)
     {
         DrawPoint(position, color, size);
@@ -95,6 +76,7 @@ public class CartesianCanvas3D : Viewport3D
         segment.PropertyChanged += OnSegmentPointsChanged;
         return segment;
     }
+
     private void DrawPoint(Point3D position, Color color, double size)
     {
         var point = CreateSphere(position, size / 2, new SolidColorBrush(color));
@@ -112,10 +94,11 @@ public class CartesianCanvas3D : Viewport3D
         segment.PropertyChanged += OnSegmentPointsChanged;
         return segment;
     }
+
     private void DrawLine(Point3D p1, Point3D p2, Color color, double thickness, int numPoints)
     {
         if (numPoints < 2) numPoints = 2; // Ensure at least the two endpoints are drawn.
-        
+
         for (int i = 0; i < numPoints; i++)
         {
             double t = (double)i / (numPoints - 1); // t ranges from 0 to 1, including both p1 and p2
@@ -139,7 +122,7 @@ public class CartesianCanvas3D : Viewport3D
         var material = new DiffuseMaterial(brush);
         return new GeometryModel3D(mesh, material);
     }
-    
+
     /// <summary>
     /// Clears all user-added content from the scene
     /// </summary>
@@ -153,7 +136,7 @@ public class CartesianCanvas3D : Viewport3D
         {
             line.PropertyChanged -= OnSegmentPointsChanged;
         }
-        
+
         _points.Clear();
         _lines.Clear();
         if (_contentModel.Content is Model3DGroup group)
@@ -161,7 +144,7 @@ public class CartesianCanvas3D : Viewport3D
             group.Children.Clear();
         }
     }
-    
+
     private MeshGeometry3D CreateSphereGeometry(Point3D center, double radius)
     {
         var mesh = new MeshGeometry3D();
@@ -216,7 +199,7 @@ public class CartesianCanvas3D : Viewport3D
             group.Children.Add(model);
         }
     }
-    
+
     private void OnSegmentPointsChanged(object? sender, EventArgs e)
     {
         Console.WriteLine("Segment points changed, updating content model.");
@@ -237,7 +220,7 @@ public class CartesianCanvas3D : Viewport3D
     #endregion
 
     #region Camera Controls
-        
+
     public void SetCavalierView()
     {
         ResetView();
@@ -264,11 +247,11 @@ public class CartesianCanvas3D : Viewport3D
             Position = new Point3D(0.5, 0.5, 10),
             LookDirection = new Vector3D(0, 0, -10),
             UpDirection = new Vector3D(0, 1, 0),
-            Width = 5,
+            Width = 20,
         };
         Camera = frontCamera;
     }
-        
+
     public void SetTopView()
     {
         ResetView();
@@ -283,11 +266,11 @@ public class CartesianCanvas3D : Viewport3D
             Position = new Point3D(0.5, 10, 0.5),
             LookDirection = new Vector3D(0, -10, 0),
             UpDirection = new Vector3D(0, 0, 1),
-            Width = 5,
+            Width = 20,
         };
         Camera = topCamera;
     }
-        
+
     public void SetSideView()
     {
         ResetView();
@@ -302,88 +285,103 @@ public class CartesianCanvas3D : Viewport3D
             Position = new Point3D(10, 0.5, 0.5),
             LookDirection = new Vector3D(-10, 0, 0),
             UpDirection = new Vector3D(0, 1, 0),
-            Width = 5,
+            Width = 20,
         };
         Camera = sideCamera;
     }
-        
+
     #endregion
 
     #region Private Methods
-        
+
     private void ApplyObliqueProjection(double shearX, double shearY)
     {
         IsObliqueProjection = true;
-    
+
         // Create shear matrix
         Matrix3D shearMatrix = new Matrix3D(
-            1,   0,       0, 0,
-            0,   1,       0, 0,
-            shearX, shearY, 1, 0,
-            0,   0,       0, 1
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            shearX, shearY, 1, 0, // This is where the shear happens on Z
+            0, 0, 0, 1
         );
-    
+
         _shearTransform = new MatrixTransform3D(shearMatrix);
         _axesModel.Transform = _shearTransform;
         _contentModel.Transform = _shearTransform;
-    
-        // Set orthographic camera
+
+        // --- Set Orthographic Camera for Oblique Projection ---
+        // Calculate the effective X and Y span of the scene after applying the shear to the Z-axis.
+        // This ensures the camera's view frustum can encompass the entire transformed scene.
+        double minX = Math.Min(0, shearX * _axisLengthZ);
+        double maxX = Math.Max(_axisLength, shearX * _axisLengthZ);
+        double minY = Math.Min(0, shearY * _axisLengthZ);
+        double maxY = Math.Max(_axisLength, shearY * _axisLengthZ);
+
+        double spanX = maxX - minX;
+        double spanY = maxY - minY;
+
+        // Determine the camera's width based on the largest span, with some padding.
+        double effectiveCameraWidth = Math.Max(spanX, spanY) * 1.2;
+
         Camera = new OrthographicCamera()
         {
-            Position = new Point3D(0.5, 0.5, 10),
-            LookDirection = new Vector3D(0, 0, -10),
+            // Position the camera to center the view around the transformed scene.
+            // The Z-component is set far enough back to ensure the entire Z-axis is visible.
+            Position = new Point3D(
+                (minX + maxX) / 2, // Center X of the view
+                (minY + maxY) / 2, // Center Y of the view
+                _axisLengthZ + 100 // Position far back along Z to ensure positive Z-axis is seen
+            ),
+            LookDirection = new Vector3D(0, 0, -1), // Look towards the origin (negative Z direction)
             UpDirection = new Vector3D(0, 1, 0),
-            Width = 10,
+            Width = effectiveCameraWidth, // Use the calculated effective width
         };
     }
-        
+
     private void ResetView()
     {
         _axesModel.Transform = Transform3D.Identity;
         _contentModel.Transform = Transform3D.Identity;
         IsObliqueProjection = false;
-    
+
         if (_axesModel.Content is Model3DGroup group)
             group.Children.Clear();
-    
+
         CreateAxes();
     }
-        
+
     /// <summary>
     /// Creates the 3D models for the X, Y, and Z axes and their ticks.
     /// </summary>
     private void CreateAxes()
     {
         var models = new Model3DGroup();
-        double axisLength = 10.0;
-        double tickSize = 0.2;
-        int tickCount = 10;
-        double lineThickness = 0.05;
-            
+
         // X-Axis (Red)
         var xAxisMaterial = new DiffuseMaterial(Brushes.Red);
-        models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(axisLength, 0, 0), lineThickness, xAxisMaterial));
-        for (int i = 1; i <= tickCount; i++)
+        models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(_axisLength, 0, 0), _lineThickness, xAxisMaterial));
+        for (int i = 1; i <= (int)_axisLength; i++)
         {
-            models.Children.Add(DrawLine(new Point3D(i, -tickSize, 0), new Point3D(i, tickSize, 0), lineThickness, xAxisMaterial));
+            models.Children.Add(DrawLine(new Point3D(i, -_tickSize, 0), new Point3D(i, _tickSize, 0), _lineThickness, xAxisMaterial));
         }
-            
+
         // Y-Axis (Green)
         var yAxisMaterial = new DiffuseMaterial(Brushes.Green);
-        models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(0, axisLength, 0), lineThickness, yAxisMaterial));
-        for (int i = 1; i <= tickCount; i++)
+        models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(0, _axisLength, 0), _lineThickness, yAxisMaterial));
+        for (int i = 1; i <= (int)_axisLength; i++)
         {
-            models.Children.Add(DrawLine(new Point3D(-tickSize, i, 0), new Point3D(tickSize, i, 0), lineThickness, yAxisMaterial));
+            models.Children.Add(DrawLine(new Point3D(-_tickSize, i, 0), new Point3D(_tickSize, i, 0), _lineThickness, yAxisMaterial));
         }
-            
+
         // Z-Axis (Blue)
         var zAxisMaterial = new DiffuseMaterial(Brushes.Blue);
-        models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(0, 0, axisLength), lineThickness, zAxisMaterial));
-        for (int i = 1; i <= tickCount; i++)
+        models.Children.Add(DrawLine(new Point3D(0, 0, 0), new Point3D(0, 0, _axisLengthZ), _lineThickness, zAxisMaterial));
+        for (int i = 1; i <= (int)_axisLengthZ; i++) // Use _axisLengthZ for Z-axis tick count
         {
-            models.Children.Add(DrawLine(new Point3D(0, -tickSize, i), new Point3D(0, tickSize, i), lineThickness, zAxisMaterial));
+            models.Children.Add(DrawLine(new Point3D(0, -_tickSize, i), new Point3D(0, _tickSize, i), _lineThickness, zAxisMaterial));
         }
-            
+
         _axesModel.Content = models;
     }
 
@@ -393,10 +391,10 @@ public class CartesianCanvas3D : Viewport3D
     private GeometryModel3D DrawLine(Point3D start, Point3D end, double thickness, Material material)
     {
         var mesh = new MeshGeometry3D();
-            
+
         Vector3D direction = end - start;
         Vector3D up = Math.Abs(direction.X) > 0.01 || Math.Abs(direction.Z) > 0.01 ? new Vector3D(0, 1, 0) : new Vector3D(1, 0, 0);
-            
+
         Vector3D side = Vector3D.CrossProduct(direction, up);
         side.Normalize();
         side *= thickness / 2;
@@ -412,59 +410,16 @@ public class CartesianCanvas3D : Viewport3D
         foreach (var p in points) mesh.Positions.Add(p);
 
         int[] indices = {
-            0, 1, 2, 0, 2, 3, 4, 7, 6, 4, 6, 5,
-            0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2,
-            2, 6, 7, 2, 7, 3, 3, 7, 4, 3, 4, 0
+            0, 1, 2, 0, 2, 3, // Front face
+            4, 7, 6, 4, 6, 5, // Back face
+            0, 4, 5, 0, 5, 1, // Bottom face
+            1, 5, 6, 1, 6, 2, // Right face
+            2, 6, 7, 2, 7, 3, // Top face
+            3, 7, 4, 3, 4, 0  // Left face
         };
         foreach (var index in indices) mesh.TriangleIndices.Add(index);
 
         return new GeometryModel3D(mesh, material);
     }
-
-    // protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-    // {
-    //     base.OnMouseLeftButtonDown(e);
-    //     this.CaptureMouse();
-    //     _lastMousePosition = e.GetPosition(this);
-    // }
-    //
-    // protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
-    // {
-    //     base.OnMouseLeftButtonUp(e);
-    //     this.ReleaseMouseCapture();
-    // }
-    //
-    // protected override void OnMouseMove(MouseEventArgs e)
-    // {
-    //     base.OnMouseMove(e);
-    //     if (this.IsMouseCaptured)
-    //     {
-    //         Point currentPosition = e.GetPosition(this);
-    //         double dx = currentPosition.X - _lastMousePosition.X;
-    //         double dy = currentPosition.Y - _lastMousePosition.Y;
-    //         double sensitivity = 0.5;
-    //
-    //         _rotationX.Angle += dx * sensitivity;
-    //         _rotationY.Angle += dy * sensitivity;
-    //
-    //         _lastMousePosition = currentPosition;
-    //     }
-    // }
-    //
-    // protected override void OnMouseWheel(MouseWheelEventArgs e)
-    // {
-    //     base.OnMouseWheel(e);
-    //     double zoomFactor = e.Delta > 0 ? 0.9 : 1.1;
-    //     Point3D currentPos = _defaultCamera.Position;
-    //     Vector3D lookDir = _defaultCamera.LookDirection;
-    //     lookDir.Normalize();
-    //
-    //     // Move camera along its look direction
-    //     _defaultCamera.Position = new Point3D(
-    //         currentPos.X - (1 - zoomFactor) * lookDir.X * 10,
-    //         currentPos.Y - (1 - zoomFactor) * lookDir.Y * 10,
-    //         currentPos.Z - (1 - zoomFactor) * lookDir.Z * 10
-    //     );
-    // }
     #endregion
 }
