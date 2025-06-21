@@ -31,7 +31,9 @@
                         <ComboBoxItem Content="Triangle" Tag="2D"/>
                         <ComboBoxItem Content="Sphere" Tag="3D"/>
                         <ComboBoxItem Content="Cube" Tag="3D"/>
+                        <ComboBoxItem Content="Cuboid" Tag="3D"/>
                         <ComboBoxItem Content="Pyramid" Tag="3D"/>
+                        <ComboBoxItem Content="Cylinder" Tag="3D"/>
                     </ComboBox>
                     <StackPanel x:Name="CoordPanel" Orientation="Horizontal" Margin="10,0,0,0">
                         <TextBlock Text="X:" VerticalAlignment="Center"/>

@@ -10,6 +10,7 @@ using WpfApp.TwoDimension.Models;
 using WpfApp.TwoDimension.Shapes;
 using WpfApp.ThreeDimension;
 using WpfApp.ThreeDimension.Models;
+using WpfApp.ThreeDimension.Shapes;
 using System.Windows.Media.Media3D;
 
 namespace WpfApp
@@ -20,8 +21,6 @@ namespace WpfApp
         private double drawY = 0;
         private double drawZ = 0; // For 3D mode
         private readonly List<ShapeContainer> _shapes = new();
-
-        // Advanced: For click-to-draw
         private List<Point> _pendingPoints = new();
         private int _requiredPoints = 0;
         private string _pendingShape = null;
@@ -101,7 +100,6 @@ namespace WpfApp
                 else
                     item.Visibility = Visibility.Visible;
             }
-            // Chọn lại item đầu tiên phù hợp
             foreach (ComboBoxItem item in ShapeComboBox.Items)
             {
                 if (item.Visibility == Visibility.Visible)
@@ -115,7 +113,6 @@ namespace WpfApp
         private void UpdateCoordPanelForMode(string mode)
         {
             if (CoordPanel == null) return;
-            // Xóa Z nếu có
             if (CoordPanel.Children.Count > 4)
                 CoordPanel.Children.RemoveRange(4, CoordPanel.Children.Count - 4);
 
@@ -180,14 +177,38 @@ namespace WpfApp
                         AddInputField("Point3 Y:");
                         break;
                     case "Sphere":
+                        AddInputField("Center X:");
+                        AddInputField("Center Y:");
+                        AddInputField("Center Z:");
                         AddInputField("Radius:");
                         break;
                     case "Cube":
+                        AddInputField("BottomLeftBack X:");
+                        AddInputField("BottomLeftBack Y:");
+                        AddInputField("BottomLeftBack Z:");
                         AddInputField("Side:");
                         break;
+                    case "Cuboid":
+                        AddInputField("Origin X:");
+                        AddInputField("Origin Y:");
+                        AddInputField("Origin Z:");
+                        AddInputField("Width:");
+                        AddInputField("Height:");
+                        AddInputField("Depth:");
+                        break;
                     case "Pyramid":
+                        AddInputField("Base X:");
+                        AddInputField("Base Y:");
+                        AddInputField("Base Z:");
                         AddInputField("Base Width:");
                         AddInputField("Base Length:");
+                        AddInputField("Height:");
+                        break;
+                    case "Cylinder":
+                        AddInputField("Base X:");
+                        AddInputField("Base Y:");
+                        AddInputField("Base Z:");
+                        AddInputField("Radius:");
                         AddInputField("Height:");
                         break;
                 }
@@ -303,16 +324,13 @@ namespace WpfApp
         {
             // Vẽ trục tọa độ OX, OY
             if (canvas2D == null) return;
-
             double width = canvas2D.ActualWidth;
             double height = canvas2D.ActualHeight;
-
             // Trục X (ngang)
             canvas2D.AddLine(
                 new Point(0, height / 2),
                 new Point(width, height / 2),
                 Brushes.Gray, 1);
-
             // Trục Y (dọc)
             canvas2D.AddLine(
                 new Point(width / 2, 0),
@@ -325,114 +343,207 @@ namespace WpfApp
             if (canvas3D == null) return;
 
             canvas3D.ClearContent();
-
-            // Vẽ trục X (đỏ)
+            // x
             canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(10, 0, 0), Colors.Red, 0.1);
-
-            // Vẽ trục Y (xanh lá)
+            // y
             canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(0, 10, 0), Colors.Green, 0.1);
-
-            // Vẽ trục Z (xanh dương)
+            // z
             canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(0, 0, 10), Colors.Blue, 0.1);
-
-            // Vẽ các tick nhỏ trên trục
-            double tickSize = 0.2;
-            int tickCount = 10;
+            double tickSize = 0.12;
+            int tickCount = 3;
             for (int i = 1; i <= tickCount; i++)
             {
-                canvas3D.AddLine(new Point3D(i, -tickSize, 0), new Point3D(i, tickSize, 0), Colors.Red, 0.05);
-                canvas3D.AddLine(new Point3D(-tickSize, i, 0), new Point3D(tickSize, i, 0), Colors.Green, 0.05);
-                canvas3D.AddLine(new Point3D(0, -tickSize, i), new Point3D(0, tickSize, i), Colors.Blue, 0.05);
+                canvas3D.AddLine(new Point3D(i, -tickSize, 0), new Point3D(i, tickSize, 0), Colors.Red, 0.04);
+                canvas3D.AddLine(new Point3D(-tickSize, i, 0), new Point3D(tickSize, i, 0), Colors.Green, 0.04);
+                canvas3D.AddLine(new Point3D(0, -tickSize, i), new Point3D(0, tickSize, i), Colors.Blue, 0.04);
             }
         }
 
         private void AddShape_Click(object sender, RoutedEventArgs e)
         {
-            if (canvas2D == null || canvas2D.Visibility != Visibility.Visible)
+            if (canvas2D != null && canvas2D.Visibility == Visibility.Visible)
             {
-                MessageBox.Show("3D mode chỉ là placeholder.");
-                return;
-            }
+                if (ShapeComboBox == null || ShapeComboBox.SelectedItem is not ComboBoxItem item)
+                    return;
 
-            if (ShapeComboBox == null || ShapeComboBox.SelectedItem is not ComboBoxItem item)
-                return;
-
-            string shape = item.Content?.ToString() ?? string.Empty;
-            if (InputFieldsPanel == null) return;
-            double[] values = new double[InputFieldsPanel.Children.Count];
-            for (int i = 0; i < InputFieldsPanel.Children.Count; i++)
-            {
-                if (InputFieldsPanel.Children[i] is StackPanel panel &&
-                    panel.Children[1] is TextBox tb)
+                string shape = item.Content?.ToString() ?? string.Empty;
+                if (InputFieldsPanel == null) return;
+                double[] values = new double[InputFieldsPanel.Children.Count];
+                for (int i = 0; i < InputFieldsPanel.Children.Count; i++)
                 {
-                    if (!double.TryParse(tb.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
+                    if (InputFieldsPanel.Children[i] is StackPanel panel &&
+                        panel.Children[1] is TextBox tb)
                     {
-                        MessageBox.Show("Vui lòng nhập số hợp lệ cho tất cả trường.");
-                        return;
+                        if (!double.TryParse(tb.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
+                        {
+                            MessageBox.Show("Vui lòng nhập số hợp lệ cho tất cả trường.");
+                            return;
+                        }
+                        values[i] = val;
                     }
-                    values[i] = val;
+                }
+
+                ShapeContainer newShape = null;
+                switch (shape)
+                {
+                    case "Circle":
+                        if (values.Length < 1 || values[0] <= 0)
+                        {
+                            MessageBox.Show("Bán kính phải > 0.");
+                            return;
+                        }
+                        newShape = new Circle(canvas2D, new Point(drawX, drawY), values[0], Brushes.Blue, 2, Brushes.LightBlue);
+                        break;
+                    case "Ellipse":
+                        if (values.Length < 2 || values[0] <= 0 || values[1] <= 0)
+                        {
+                            MessageBox.Show("Bán trục X và Y phải > 0.");
+                            return;
+                        }
+                        newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
+                        break;
+                    case "Rectangle":
+                        if (values.Length < 4)
+                        {
+                            MessageBox.Show("Vui lòng nhập đủ 4 giá trị cho hình chữ nhật.");
+                            return;
+                        }
+                        var topLeft = new Point(values[0], values[1]);
+                        var bottomRight = new Point(values[2], values[3]);
+                        newShape = new Rectangle(canvas2D, topLeft, 0, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
+                        break;
+                    case "Triangle":
+                        if (values.Length < 6)
+                        {
+                            MessageBox.Show("Vui lòng nhập đủ 6 giá trị cho hình tam giác.");
+                            return;
+                        }
+                        var p1 = new Point(values[0], values[1]);
+                        var p2 = new Point(values[2], values[3]);
+                        var p3 = new Point(values[4], values[5]);
+                        newShape = new WpfApp.TwoDimension.Shapes.Triangle(canvas2D, p1, p2, p3, Brushes.Orange, 2, Brushes.Yellow);
+                        break;
+                }
+
+                if (newShape != null)
+                {
+                    _shapes.Add(newShape);
+                    foreach (var segment in newShape.Segments)
+                    {
+                        if (segment is FillSegment fillSegment)
+                            canvas2D.AddFill(fillSegment);
+                        else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
+                            canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
+                        else if (segment is PointSegment pointSegment)
+                            canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
+                    }
                 }
             }
-
-            ShapeContainer newShape = null;
-            switch (shape)
+            else if (canvas3D != null && canvas3D.Visibility == Visibility.Visible)
             {
-                case "Circle":
-                    if (values.Length < 1 || values[0] <= 0)
-                    {
-                        MessageBox.Show("Bán kính phải > 0.");
-                        return;
-                    }
-                    newShape = new Circle(canvas2D, new Point(drawX, drawY), values[0], Brushes.Blue, 2, Brushes.LightBlue);
-                    break;
-                case "Ellipse":
-                    if (values.Length < 2 || values[0] <= 0 || values[1] <= 0)
-                    {
-                        MessageBox.Show("Bán trục X và Y phải > 0.");
-                        return;
-                    }
-                    newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
-                    break;
-                case "Rectangle":
-                    if (values.Length < 4)
-                    {
-                        MessageBox.Show("Vui lòng nhập đủ 4 giá trị cho hình chữ nhật.");
-                        return;
-                    }
-                    var topLeft = new Point(values[0], values[1]);
-                    var bottomRight = new Point(values[2], values[3]);
-                    newShape = new Rectangle(canvas2D, topLeft, 0, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
-                    break;
-                case "Triangle":
-                    if (values.Length < 6)
-                    {
-                        MessageBox.Show("Vui lòng nhập đủ 6 giá trị cho hình tam giác.");
-                        return;
-                    }
-                    var p1 = new Point(values[0], values[1]);
-                    var p2 = new Point(values[2], values[3]);
-                    var p3 = new Point(values[4], values[5]);
-                    newShape = new WpfApp.TwoDimension.Shapes.Triangle(canvas2D, p1, p2, p3, Brushes.Orange, 2, Brushes.Yellow);
-                    break;
-                // 3D shapes: chỉ placeholder
-                case "Sphere":
-                case "Cube":
-                case "Pyramid":
-                    MessageBox.Show("Chế độ 3D chỉ là placeholder.");
+                if (ShapeComboBox == null || ShapeComboBox.SelectedItem is not ComboBoxItem item)
                     return;
-            }
 
-            if (newShape != null)
-            {
-                _shapes.Add(newShape);
-                foreach (var segment in newShape.Segments)
+                string shape = item.Content?.ToString() ?? string.Empty;
+                if (InputFieldsPanel == null) return;
+                double[] values = new double[InputFieldsPanel.Children.Count];
+                for (int i = 0; i < InputFieldsPanel.Children.Count; i++)
                 {
-                    if (segment is FillSegment fillSegment)
-                        canvas2D.AddFill(fillSegment);
-                    else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
-                        canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
-                    else if (segment is PointSegment pointSegment)
-                        canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
+                    if (InputFieldsPanel.Children[i] is StackPanel panel &&
+                        panel.Children[1] is TextBox tb)
+                    {
+                        if (!double.TryParse(tb.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
+                        {
+                            MessageBox.Show("Vui lòng nhập số hợp lệ cho tất cả trường.");
+                            return;
+                        }
+                        values[i] = val;
+                    }
+                }
+
+                switch (shape)
+                {
+                    case "Cylinder":
+                        if (values.Length < 5)
+                        {
+                            MessageBox.Show("Vui lòng nhập đủ thông tin cho Cylinder.");
+                            return;
+                        }
+                        var baseCenter = new Point3D(values[0], values[1], values[2]);
+                        var radius = values[3];
+                        var height = values[4];
+                        if (radius <= 0 || height <= 0)
+                        {
+                            MessageBox.Show("Bán kính và chiều cao phải > 0.");
+                            return;
+                        }
+                        _ = new Cylinder(canvas3D, baseCenter, radius, height, Colors.Orange, 0.08, 32);
+                        break;
+                    case "Sphere":
+                        if (values.Length < 4)
+                        {
+                            MessageBox.Show("Vui lòng nhập đủ thông tin cho Sphere.");
+                            return;
+                        }
+                        var center = new Point3D(values[0], values[1], values[2]);
+                        var r = values[3];
+                        if (r <= 0)
+                        {
+                            MessageBox.Show("Bán kính phải > 0.");
+                            return;
+                        }
+                        _ = new Sphere(canvas3D, center, r, Colors.Blue, 0.08, 32);
+                        break;
+                    case "Cube":
+                        if (values.Length < 4)
+                        {
+                            MessageBox.Show("Vui lòng nhập đủ thông tin cho Cube.");
+                            return;
+                        }
+                        var cubeOrigin = new Point3D(values[0], values[1], values[2]);
+                        var side = values[3];
+                        if (side <= 0)
+                        {
+                            MessageBox.Show("Cạnh phải > 0.");
+                            return;
+                        }
+                        _ = new Cube(canvas3D, cubeOrigin, side, Colors.Green, 0.08);
+                        break;
+                    case "Cuboid":
+                        if (values.Length < 6)
+                        {
+                            MessageBox.Show("Vui lòng nhập đủ thông tin cho Cuboid.");
+                            return;
+                        }
+                        var cuboidOrigin = new Point3D(values[0], values[1], values[2]);
+                        var width = values[3];
+                        var heightCuboid = values[4];
+                        var depth = values[5];
+                        if (width <= 0 || heightCuboid <= 0 || depth <= 0)
+                        {
+                            MessageBox.Show("Kích thước phải > 0.");
+                            return;
+                        }
+                        _ = new Cuboid(canvas3D, cuboidOrigin, width, heightCuboid, depth, Colors.Purple, 0.08);
+                        break;
+
+                    case "Pyramid":
+                        if (values.Length < 6)
+                        {
+                            MessageBox.Show("Vui lòng nhập đủ thông tin cho Pyramid.");
+                            return;
+                        }
+                        var baseOrigin = new Point3D(values[0], values[1], values[2]);
+                        var baseWidth = values[3];
+                        var baseLength = values[4];
+                        var pyramidHeight = values[5];
+                        if (baseWidth <= 0 || baseLength <= 0 || pyramidHeight <= 0)
+                        {
+                            MessageBox.Show("Kích thước phải > 0.");
+                            return;
+                        }
+                        _ = new Pyramid(canvas3D, baseOrigin, baseWidth, baseLength, pyramidHeight, Colors.Red, 0.08);
+                        break;
                 }
             }
         }
