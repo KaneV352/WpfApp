@@ -290,7 +290,7 @@ namespace WpfApp
                 case "Rectangle":
                     var topLeft = _pendingPoints[0];
                     var bottomRight = _pendingPoints[1];
-                    newShape = new Rectangle(canvas2D, topLeft, 0, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
+                    newShape = new Rectangle(canvas2D, topLeft, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
                     break;
                 case "Triangle":
                     var p1 = _pendingPoints[0];
@@ -405,7 +405,7 @@ namespace WpfApp
                         }
                         var topLeft = new Point(values[0], values[1]);
                         var bottomRight = new Point(values[2], values[3]);
-                        newShape = new Rectangle(canvas2D, topLeft, 0, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
+                        newShape = new Rectangle(canvas2D, topLeft, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
                         break;
                     case "Triangle":
                         if (values.Length < 6)
