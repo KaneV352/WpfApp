@@ -19,8 +19,9 @@ namespace WpfApp
     {
         private double drawX = 0;
         private double drawY = 0;
-        private double drawZ = 0; // For 3D mode
+        private double drawZ = 0; 
         private readonly List<ShapeContainer> _shapes = new();
+        private readonly List<object> _shapes3D = new(); 
         private List<Point> _pendingPoints = new();
         private int _requiredPoints = 0;
         private string _pendingShape = null;
@@ -136,16 +137,16 @@ namespace WpfApp
                 switch (shape)
                 {
                     case "Circle":
-                        _requiredPoints = 2; // Center, point on circle
+                        _requiredPoints = 2;
                         break;
                     case "Ellipse":
-                        _requiredPoints = 3; // Center, point on X axis, point on Y axis
+                        _requiredPoints = 3; 
                         break;
                     case "Rectangle":
-                        _requiredPoints = 2; // Two opposite corners
+                        _requiredPoints = 2; 
                         break;
                     case "Triangle":
-                        _requiredPoints = 3; // Three points
+                        _requiredPoints = 3;
                         break;
                     default:
                         _requiredPoints = 0;
@@ -230,7 +231,6 @@ namespace WpfApp
                 drawX = x;
             if (CoordYBox != null && double.TryParse(CoordYBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
                 drawY = y;
-            // Nếu có Z
             var zBox = FindName("CoordZBox") as TextBox;
             if (zBox != null && double.TryParse(zBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double z))
                 drawZ = z;
@@ -241,12 +241,9 @@ namespace WpfApp
             if (canvas2D == null) return;
             var pos = e.GetPosition(canvas2D);
             var worldPos = canvas2D.CanvasToWorld(pos);
-
-            // Advanced: click-to-draw mode
             if (_requiredPoints > 0 && !string.IsNullOrEmpty(_pendingShape))
             {
                 _pendingPoints.Add(worldPos);
-                // Optionally, show a temporary point
                 canvas2D.AddPoint(worldPos, Brushes.Gray, 3);
 
                 if (_pendingPoints.Count == _requiredPoints)
@@ -256,8 +253,6 @@ namespace WpfApp
                 }
                 return;
             }
-
-            // Default: update coordinate input boxes
             if (CoordXBox != null)
                 CoordXBox.Text = worldPos.X.ToString("0.##", CultureInfo.InvariantCulture);
             if (CoordYBox != null)
@@ -461,6 +456,7 @@ namespace WpfApp
                     }
                 }
 
+                object newShape3D = null;
                 switch (shape)
                 {
                     case "Cylinder":
@@ -477,7 +473,7 @@ namespace WpfApp
                             MessageBox.Show("Bán kính và chiều cao phải > 0.");
                             return;
                         }
-                        _ = new Cylinder(canvas3D, baseCenter, radius, height, Colors.Orange, 0.08, 32);
+                        newShape3D = new Cylinder(canvas3D, baseCenter, radius, height, Colors.Orange, 0.08, 32);
                         break;
                     case "Sphere":
                         if (values.Length < 4)
@@ -492,7 +488,7 @@ namespace WpfApp
                             MessageBox.Show("Bán kính phải > 0.");
                             return;
                         }
-                        _ = new Sphere(canvas3D, center, r, Colors.Blue, 0.08, 32);
+                        newShape3D = new Sphere(canvas3D, center, r, Colors.Blue, 0.08, 32);
                         break;
                     case "Cube":
                         if (values.Length < 4)
@@ -507,7 +503,7 @@ namespace WpfApp
                             MessageBox.Show("Cạnh phải > 0.");
                             return;
                         }
-                        _ = new Cube(canvas3D, cubeOrigin, side, Colors.Green, 0.08);
+                        newShape3D = new Cube(canvas3D, cubeOrigin, side, Colors.Green, 0.08);
                         break;
                     case "Cuboid":
                         if (values.Length < 6)
@@ -524,7 +520,7 @@ namespace WpfApp
                             MessageBox.Show("Kích thước phải > 0.");
                             return;
                         }
-                        _ = new Cuboid(canvas3D, cuboidOrigin, width, heightCuboid, depth, Colors.Purple, 0.08);
+                        newShape3D = new Cuboid(canvas3D, cuboidOrigin, width, heightCuboid, depth, Colors.Purple, 0.08);
                         break;
 
                     case "Pyramid":
@@ -542,35 +538,62 @@ namespace WpfApp
                             MessageBox.Show("Kích thước phải > 0.");
                             return;
                         }
-                        _ = new Pyramid(canvas3D, baseOrigin, baseWidth, baseLength, pyramidHeight, Colors.Red, 0.08);
+                        newShape3D = new Pyramid(canvas3D, baseOrigin, baseWidth, baseLength, pyramidHeight, Colors.Red, 0.08);
                         break;
+                }
+
+                if (newShape3D != null)
+                {
+                    _shapes3D.Add(newShape3D);
                 }
             }
         }
 
         private void DeleteShapeButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_shapes.Count > 0)
+            if (canvas2D != null && canvas2D.Visibility == Visibility.Visible)
             {
-                _shapes.RemoveAt(_shapes.Count - 1);
-                if (canvas2D != null)
-                    canvas2D.ClearAll();
-                foreach (var shape in _shapes)
+                if (_shapes.Count > 0)
                 {
-                    foreach (var segment in shape.Segments)
+                    _shapes.RemoveAt(_shapes.Count - 1);
+                    canvas2D.ClearAll();
+                    foreach (var shape in _shapes)
                     {
-                        if (segment is FillSegment fillSegment)
-                            canvas2D.AddFill(fillSegment);
-                        else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
-                            canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
-                        else if (segment is PointSegment pointSegment)
-                            canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
+                        foreach (var segment in shape.Segments)
+                        {
+                            if (segment is FillSegment fillSegment)
+                                canvas2D.AddFill(fillSegment);
+                            else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
+                                canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
+                            else if (segment is PointSegment pointSegment)
+                                canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
+                        }
                     }
                 }
+                else
+                {
+                    MessageBox.Show("Không có hình nào để xóa.");
+                }
             }
-            else
+            else if (canvas3D != null && canvas3D.Visibility == Visibility.Visible)
             {
-                MessageBox.Show("Không có hình nào để xóa.");
+                if (_shapes3D.Count > 0)
+                {
+                    _shapes3D.RemoveAt(_shapes3D.Count - 1);
+                    canvas3D.ClearContent();
+                    foreach (var shape3D in _shapes3D)
+                    {
+                        var method = shape3D.GetType().GetMethod("Draw");
+                        if (method != null)
+                        {
+                            method.Invoke(shape3D, null);
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Không có hình 3D nào để xóa.");
+                }
             }
         }
     }
