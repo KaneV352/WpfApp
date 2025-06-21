@@ -19,9 +19,9 @@ namespace WpfApp
     {
         private double drawX = 0;
         private double drawY = 0;
-        private double drawZ = 0; 
+        private double drawZ = 0;
         private readonly List<ShapeContainer> _shapes = new();
-        private readonly List<object> _shapes3D = new(); 
+        private readonly List<object> _shapes3D = new();
         private List<Point> _pendingPoints = new();
         private int _requiredPoints = 0;
         private string _pendingShape = null;
@@ -44,6 +44,8 @@ namespace WpfApp
                 CoordXBox.Text = "0";
             if (CoordYBox != null)
                 CoordYBox.Text = "0";
+            if (CoordPanel != null)
+                CoordPanel.Visibility = Visibility.Visible;
         }
 
         private void Mode2DButton_Checked(object sender, RoutedEventArgs e)
@@ -56,6 +58,8 @@ namespace WpfApp
                 canvas3D.Visibility = Visibility.Collapsed;
             UpdateShapeComboBox("2D");
             UpdateCoordPanelForMode("2D");
+            if (CoordPanel != null)
+                CoordPanel.Visibility = Visibility.Visible; 
         }
 
         private void Mode2DButton_Unchecked(object sender, RoutedEventArgs e)
@@ -77,6 +81,8 @@ namespace WpfApp
                 canvas3D.Visibility = Visibility.Visible;
             UpdateShapeComboBox("3D");
             UpdateCoordPanelForMode("3D");
+            if (CoordPanel != null)
+                CoordPanel.Visibility = Visibility.Collapsed; 
         }
 
         private void Mode3DButton_Unchecked(object sender, RoutedEventArgs e)
@@ -119,10 +125,10 @@ namespace WpfApp
 
             if (mode == "3D")
             {
-                CoordPanel.Children.Add(new TextBlock { Text = "Z:", VerticalAlignment = VerticalAlignment.Center });
-                var zBox = new TextBox { Name = "CoordZBox", Width = 50, Margin = new Thickness(5, 0, 0, 0) };
-                zBox.TextChanged += CoordBox_TextChanged;
-                CoordPanel.Children.Add(zBox);
+                // CoordPanel.Children.Add(new TextBlock { Text = "Z:", VerticalAlignment = VerticalAlignment.Center });
+                // var zBox = new TextBox { Name = "CoordZBox", Width = 50, Margin = new Thickness(5, 0, 0, 0) };
+                // zBox.TextChanged += CoordBox_TextChanged;
+                // CoordPanel.Children.Add(zBox);
             }
         }
 
@@ -140,10 +146,10 @@ namespace WpfApp
                         _requiredPoints = 2;
                         break;
                     case "Ellipse":
-                        _requiredPoints = 3; 
+                        _requiredPoints = 3;
                         break;
                     case "Rectangle":
-                        _requiredPoints = 2; 
+                        _requiredPoints = 2;
                         break;
                     case "Triangle":
                         _requiredPoints = 3;
