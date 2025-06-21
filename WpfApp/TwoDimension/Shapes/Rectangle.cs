@@ -14,7 +14,7 @@ public class Rectangle : ShapeContainer
     private int v3;
     private SolidColorBrush lightGreen;
 
-    public Rectangle(CartesianCanvas canvas, Point topLeft, double v, Point bottomRight, Brush strokeColor, double thickness = 1, Brush? fillColor = null)
+    public Rectangle(CartesianCanvas canvas, Point topLeft, Point bottomRight, Brush strokeColor, double thickness = 1, Brush? fillColor = null)
     {
         if (topLeft.X > bottomRight.X || topLeft.Y < bottomRight.Y)
         {
