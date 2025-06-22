@@ -8,7 +8,9 @@ public abstract class Animation2D
     protected TimeSpan _duration;
     protected TimeSpan _elapsedTime;
 
-    public bool IsFinished => _elapsedTime >= _duration;
+    //public bool IsFinished => _elapsedTime >= _duration;
+    public virtual bool IsFinished => _elapsedTime >= _duration;
+
 
     public Animation2D(ShapeContainer shape, TimeSpan duration)
     {
@@ -17,7 +19,7 @@ public abstract class Animation2D
         _elapsedTime = TimeSpan.Zero;
     }
 
-    public void Update(TimeSpan deltaTime)
+    public virtual void Update(TimeSpan deltaTime)
     {
         if (IsFinished) return;
         _elapsedTime += deltaTime;
