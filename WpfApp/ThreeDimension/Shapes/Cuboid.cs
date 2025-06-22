@@ -1,4 +1,5 @@
-﻿using System.Windows.Media.Media3D;
+﻿using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using WpfApp.ThreeDimension;
 using WpfApp.ThreeDimension.Models;
 
