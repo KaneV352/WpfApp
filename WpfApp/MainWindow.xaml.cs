@@ -5,14 +5,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using WpfApp.TwoDimension;
-using WpfApp.TwoDimension.Models;
-using WpfApp.TwoDimension.Shapes;
+using System.Windows.Media.Media3D;
 using WpfApp.ThreeDimension;
 using WpfApp.ThreeDimension.Models;
 using WpfApp.ThreeDimension.Shapes;
-using System.Windows.Media.Media3D;
+using WpfApp.TwoDimension;
 using WpfApp.TwoDimension.Animations;
+using WpfApp.TwoDimension.Models;
+using WpfApp.TwoDimension.Samples;
+using WpfApp.TwoDimension.Shapes;
 using System.Linq; // Added for .Average()
 using WpfApp.Animation;
 
@@ -398,23 +399,9 @@ namespace WpfApp
             _pendingPoints.Clear();
             _pendingShape = null;
             _requiredPoints = 0;
-            
-            
+
+
             // Animation example
-            var circle = new Circle(canvas2D, new Point(20, 20), 10, Brushes.Blue, 2, Brushes.LightBlue);
-            var rectangle = new Rectangle(canvas2D, new Point(-10, 10), new Point(10, -10), Brushes.Green, 2, Brushes.LightGreen);
-            var circleTranslateAnimation = new TranslateAnimation2D(circle, new Point(-20, 0), TimeSpan.FromSeconds(2));
-            var circleScaleAnimation = new ScaleAnimation(circle, 1.5, 0.5, TimeSpan.FromSeconds(2));
-            var circleRotateAnimation = new RotateAnimation(circle, 180, TimeSpan.FromSeconds(2), circle.GetCenter);
-            var rectangleTranslateAnimation = new TranslateAnimation2D(rectangle, new Point(20, 0), TimeSpan.FromSeconds(2));
-            var rectangleScaleAnimation = new ScaleAnimation(rectangle, 1.5, 1.5, TimeSpan.FromSeconds(2));
-            var rectangleRotateAnimation = new RotateAnimation(rectangle, 180, TimeSpan.FromSeconds(2), () => new Point(0, 0));
-            _animator.AddAnimation(circleTranslateAnimation, TimeSpan.Zero);
-            _animator.AddAnimation(rectangleTranslateAnimation, TimeSpan.Zero);
-            _animator.AddAnimation(rectangleScaleAnimation, TimeSpan.Zero);
-            _animator.AddAnimation(rectangleRotateAnimation, TimeSpan.FromSeconds(2));
-            _animator.AddAnimation(circleScaleAnimation, TimeSpan.Zero);
-            _animator.AddAnimation(circleRotateAnimation, TimeSpan.FromSeconds(2));
         }
 
         private void Canvas3D_Loaded(object sender, RoutedEventArgs e)
