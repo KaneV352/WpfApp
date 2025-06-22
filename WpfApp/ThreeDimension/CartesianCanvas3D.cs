@@ -122,11 +122,27 @@ public class CartesianCanvas3D : Viewport3D
         var material = new DiffuseMaterial(brush);
         return new GeometryModel3D(mesh, material);
     }
+    
+    public void DeleteSegment(ShapeSegment3D segment)
+    {
+        if (segment is PointSegment3D point && _points.Contains(point))
+        {
+            point.PropertyChanged -= OnSegmentPointsChanged;
+            _points.Remove(point);
+        }
+        else if (segment is LineSegment3D line && _lines.Contains(line))
+        {
+            line.PropertyChanged -= OnSegmentPointsChanged;
+            _lines.Remove(line);
+        }
+        
+        InvalidateVisual();
+    }
 
     /// <summary>
     /// Clears all user-added content from the scene
     /// </summary>
-    public void ClearContent()
+    public void ClearAll()
     {
         foreach (var point in _points)
         {

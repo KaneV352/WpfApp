@@ -90,6 +90,27 @@ public class CartesianCanvas : Canvas
         InvalidateVisual();
         return fillSegment;
     }
+    
+    public void DeleteSegment(ShapeSegment segment)
+    {
+        if (segment is PointSegment point && _points.Contains(point))
+        {
+            point.PropertyChanged -= OnSegmentPointsChanged;
+            _points.Remove(point);
+        }
+        else if (segment is LineSegment line && _lines.Contains(line))
+        {
+            line.PropertyChanged -= OnSegmentPointsChanged;
+            _lines.Remove(line);
+        }
+        else if (_fillSegments.Contains(segment))
+        {
+            segment.PropertyChanged -= OnSegmentPointsChanged;
+            _fillSegments.Remove(segment);
+        }
+        
+        InvalidateVisual();
+    }
 
     public void ClearAll()
     {

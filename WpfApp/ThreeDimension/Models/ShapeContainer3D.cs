@@ -13,4 +13,15 @@ public class ShapeContainer3D
             Segments[i].TransformPoints(transformation, i == Segments.Count - 1);
         }
     }
+    
+    public Point3D GetCenter()
+    {
+        var allPoints = Segments.SelectMany(s => s.WorldPoints).ToList();
+        if (!allPoints.Any()) return new Point3D(0, 0, 0);
+
+        double avgX = allPoints.Average(p => p.X);
+        double avgY = allPoints.Average(p => p.Y);
+        double avgZ = allPoints.Average(p => p.Z);
+        return new Point3D(avgX, avgY, avgZ);
+    }
 }
