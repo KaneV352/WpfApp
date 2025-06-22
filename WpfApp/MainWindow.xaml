@@ -59,6 +59,7 @@
                     <Button Content="Phóng to" Click="ScaleUp_Click" Margin="10,0,5,0"/>
                     <Button Content="Thu nhỏ" Click="ScaleDown_Click"/>
                     <Button Content="Đối xứng" Margin="5,0,0,0"  Click="SymmetricButton_Click"/>
+                    <Button Content="Chạy hoạt cảnh" Click="RunSceneAnimation_Click" Margin="5,10,0,0"/>
                 </StackPanel>
             </StackPanel>
         </Border>

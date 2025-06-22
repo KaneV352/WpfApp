@@ -42,6 +42,11 @@ namespace WpfApp
             _animator.Start(); // Start the animator when the window loads
         }
 
+
+        private void RunSceneAnimation_Click(object sender, RoutedEventArgs e)
+        {
+            SceneAnimations.StartCharacterCoinScene(canvas2D, _animator);
+        }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             if (Mode2DButton != null)
@@ -786,6 +791,7 @@ namespace WpfApp
             double centerY = allPoints.Average(p => p.Y);
             return new Point(centerX, centerY);
         }
+
 
         private void RedrawAllShapes()
         {
