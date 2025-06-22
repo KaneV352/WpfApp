@@ -366,55 +366,6 @@ namespace WpfApp
 
 
             // Animation example
-            // 2. Nhân vật và đồng xu
-            var character = ShapeSample.CreateCharacter(canvas2D, new Point(-30, 8), 8);
-            var coin = ShapeSample.CreateCoin(canvas2D, new Point(60, 0), 6);
-
-            // Di chuyển nhân vật từ -30 đến 60
-            var moveOffset = new Point(90, 0);
-            var moveDuration = TimeSpan.FromSeconds(10);
-
-            // Coin nhảy lên sau khi nhân vật đến
-            var liftOffset = new Point(0, 10);
-            var liftDuration = TimeSpan.FromSeconds(0.5);
-            var liftDelay = moveDuration;
-
-            // 3. Coin: loop scale để mô phỏng xoay
-            // Coin: scale liên tục trong 10 giây để mô phỏng xoay
-            var coinLoopScale = new LoopScaleAnimation(
-                coin,
-                minScaleX: 0.2, minScaleY: 1.0,
-                maxScaleX: 1.0, maxScaleY: 1.0,
-                loopDuration: TimeSpan.FromSeconds(0.6),  // mỗi lần co giãn
-                maxDuration: TimeSpan.FromSeconds(10),   // tổng thời gian scale liên tục
-                autoReverse: true
-            );
-            _animator.AddAnimation(coinLoopScale, TimeSpan.Zero);
-
-
-            // Coin: nhảy lên sau khi nhân vật đến
-            _animator.AddAnimation(new TranslateAnimation2D(coin, liftOffset, liftDuration), liftDelay);
-
-            // 4. Di chuyển từng bộ phận nhân vật (không dùng foreach)
-            _animator.AddAnimation(new TranslateAnimation2D(character.Body, moveOffset, moveDuration), TimeSpan.Zero);
-            _animator.AddAnimation(new TranslateAnimation2D(character.Head, moveOffset, moveDuration), TimeSpan.Zero);
-            _animator.AddAnimation(new TranslateAnimation2D(character.LeftEye, moveOffset, moveDuration), TimeSpan.Zero);
-            _animator.AddAnimation(new TranslateAnimation2D(character.RightEye, moveOffset, moveDuration), TimeSpan.Zero);
-            _animator.AddAnimation(new TranslateAnimation2D(character.LeftLeg, moveOffset, moveDuration), TimeSpan.Zero);
-            _animator.AddAnimation(new TranslateAnimation2D(character.RightLeg, moveOffset, moveDuration), TimeSpan.Zero);
-            _animator.AddAnimation(new TranslateAnimation2D(character.LeftArm, moveOffset, moveDuration), TimeSpan.Zero);
-            _animator.AddAnimation(new TranslateAnimation2D(character.RightArm, moveOffset, moveDuration), TimeSpan.Zero);
-
-            // 5. Vung tay chân bằng LoopRotateAnimation
-            var swingDuration = TimeSpan.FromSeconds(0.3);
-            var swingAngle = 45;
-
-            _animator.AddAnimation(new LoopRotateAnimation(character.LeftArm, -swingAngle, swingDuration, character.LeftArm.GetCenter), TimeSpan.Zero);
-            _animator.AddAnimation(new LoopRotateAnimation(character.RightArm, swingAngle, swingDuration, character.RightArm.GetCenter), TimeSpan.Zero);
-            _animator.AddAnimation(new LoopRotateAnimation(character.LeftLeg, -swingAngle, swingDuration, character.LeftLeg.GetCenter), TimeSpan.Zero);
-            _animator.AddAnimation(new LoopRotateAnimation(character.RightLeg, swingAngle, swingDuration, character.RightLeg.GetCenter), TimeSpan.Zero);
-
-
         }
 
         private void Canvas3D_Loaded(object sender, RoutedEventArgs e)
