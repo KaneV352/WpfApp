@@ -172,6 +172,11 @@ namespace WpfApp
                     case "Triangle":
                         _requiredPoints = 3;
                         break;
+                    case "Character1":
+                    case "Coin":
+                    case "Heart":
+                        _requiredPoints = 1;
+                        break;
                     default:
                         _requiredPoints = 0;
                         break;
@@ -196,6 +201,11 @@ namespace WpfApp
                         case "Ellipse":
                             InstructionTextBlock.Text = "Nhập bán trục X và Y cho ellipse.";
                             break;
+                        case "Character1":
+                        case "Coin":
+                        case "Heart":
+                            InstructionTextBlock.Text = "Nhập kích thước cho hình.";
+                            break;
                         default:
                             InstructionTextBlock.Text = "Chọn hình, nhập thông số, sau đó nhấn 'Thêm hình'.";
                             break;
@@ -219,6 +229,11 @@ namespace WpfApp
                         AddXYInputField("Điểm 1 (X, Y):");
                         AddXYInputField("Điểm 2 (X, Y):");
                         AddXYInputField("Điểm 3 (X, Y):");
+                        break;
+                    case "Character1":
+                    case "Coin":
+                    case "Heart":
+                        AddInputField("Kích thước:");
                         break;
                     case "Sphere":
                         AddInputField("Tâm X:");
@@ -387,6 +402,18 @@ namespace WpfApp
                     var p3 = _pendingPoints[2];
                     newShape = new WpfApp.TwoDimension.Shapes.Triangle(canvas2D, p1, p2, p3, Brushes.Orange, 2, Brushes.Yellow);
                     break;
+                case "Character1":
+                    var char1Center = _pendingPoints[0];
+                    newShape = new Character1(canvas2D, char1Center, 40); // 40 là kích thước mặc định, có thể lấy từ input nếu muốn
+                    break;
+                case "Coin":
+                    var coinCenter = _pendingPoints[0];
+                    newShape = new Coin(canvas2D, coinCenter, 20); // 20 là kích thước mặc định, có thể lấy từ input nếu muốn
+                    break;
+                case "Heart":
+                    var heartCenter = _pendingPoints[0];
+                    newShape = new Heart(canvas2D, heartCenter, 30, Brushes.Red, 2, Brushes.Pink); // 30 là kích thước mặc định
+                    break;
             }
 
             if (newShape != null)
@@ -523,6 +550,30 @@ namespace WpfApp
                                 return;
                             }
                             newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
+                            break;
+                        case "Character1":
+                            if (values.Length < 1 || values[0] <= 0)
+                            {
+                                MessageBox.Show("Kích thước phải > 0.");
+                                return;
+                            }
+                            newShape = new Character1(canvas2D, new Point(drawX, drawY), values[0]);
+                            break;
+                        case "Coin":
+                            if (values.Length < 1 || values[0] <= 0)
+                            {
+                                MessageBox.Show("Kích thước phải > 0.");
+                                return;
+                            }
+                            newShape = new Coin(canvas2D, new Point(drawX, drawY), values[0]);
+                            break;
+                        case "Heart":
+                            if (values.Length < 1 || values[0] <= 0)
+                            {
+                                MessageBox.Show("Kích thước phải > 0.");
+                                return;
+                            }
+                            newShape = new Heart(canvas2D, new Point(drawX, drawY), values[0], Brushes.Red, 2, Brushes.Pink);
                             break;
                     }
                 }
