@@ -5,8 +5,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using WpfApp.ThreeDimension;
+using WpfApp.ThreeDimension.Models;
+using WpfApp.ThreeDimension.Shapes;
 using WpfApp.TwoDimension;
 using WpfApp.TwoDimension.Models;
+using WpfApp.TwoDimension.Samples;
 using WpfApp.TwoDimension.Shapes;
 
 namespace WpfApp
