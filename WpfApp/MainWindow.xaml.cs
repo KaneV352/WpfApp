@@ -14,7 +14,7 @@ using WpfApp.TwoDimension.Animations;
 using WpfApp.TwoDimension.Models;
 using WpfApp.TwoDimension.Samples;
 using WpfApp.TwoDimension.Shapes;
-using System.Linq; // Added for .Average()
+using System.Linq; 
 using WpfApp.Animation;
 
 namespace WpfApp
@@ -30,19 +30,17 @@ namespace WpfApp
         private int _requiredPoints = 0;
         private string _pendingShape = null;
         private ShapeContainer? _selectedShape = null;
-        private bool _isSelectionMode = false; // New field to track selection mode
+        private bool _isSelectionMode = false;
 
-        private Animator _animator = new Animator(); // Instantiate the Animator
+        private Animator _animator = new Animator();
 
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
             
-            _animator.Start(); // Start the animator when the window loads
+            _animator.Start(); 
         }
-
-
         private void RunSceneAnimation_Click(object sender, RoutedEventArgs e)
         {
             SceneAnimations.StartCharacterCoinScene(canvas2D, _animator);
@@ -371,11 +369,8 @@ namespace WpfApp
             if (canvas2D == null) return;
             var pos = e.GetPosition(canvas2D);
             var worldPos = canvas2D.CanvasToWorld(pos);
-            // Thử chọn 1 shape gần vị trí click
             var clickedPoint = worldPos;
             _shapeSelectedByClick(clickedPoint);
-
-            // Advanced: click-to-draw mode - Only allow if not in selection mode
             if (!_isSelectionMode && _requiredPoints > 0 && !string.IsNullOrEmpty(_pendingShape))
             {
                 _pendingPoints.Add(worldPos);
@@ -435,15 +430,15 @@ namespace WpfApp
                     break;
                 case "Character1":
                     var char1Center = _pendingPoints[0];
-                    newShape = new Character1(canvas2D, char1Center, 40); // 40 là kích thước mặc định, có thể lấy từ input nếu muốn
+                    newShape = new Character1(canvas2D, char1Center, 40); 
                     break;
                 case "Coin":
                     var coinCenter = _pendingPoints[0];
-                    newShape = new Coin(canvas2D, coinCenter, 20); // 20 là kích thước mặc định, có thể lấy từ input nếu muốn
+                    newShape = new Coin(canvas2D, coinCenter, 20);
                     break;
                 case "Heart":
                     var heartCenter = _pendingPoints[0];
-                    newShape = new Heart(canvas2D, heartCenter, 30, Brushes.Red, 2, Brushes.Pink); // 30 là kích thước mặc định
+                    newShape = new Heart(canvas2D, heartCenter, 30, Brushes.Red, 2, Brushes.Pink); 
                     break;
             }
 
@@ -462,9 +457,6 @@ namespace WpfApp
             _pendingPoints.Clear();
             _pendingShape = null;
             _requiredPoints = 0;
-
-
-            // Animation example
         }
 
         private void Canvas3D_Loaded(object sender, RoutedEventArgs e)
@@ -733,6 +725,16 @@ namespace WpfApp
                 }
             }
         }
+        private void DeleteShape3D(ShapeContainer3D shape)
+        {
+            if (shape == null) return;
+            foreach (var segment in shape.Segments.ToList())
+            {
+                canvas3D.DeleteSegment(segment);
+            }
+            _shapes3D.Remove(shape);
+            _animator.RemoveAnimationsForShape(shape);
+        }
 
         private void DeleteShapeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -741,12 +743,11 @@ namespace WpfApp
                 if (_selectedShape != null && _shapes.Contains(_selectedShape))
                 {
                     _shapes.Remove(_selectedShape);
-                    _selectedShape = null; // Bỏ chọn sau khi xóa
-                    _isSelectionMode = false; // Exit selection mode
+                    _selectedShape = null; 
+                    _isSelectionMode = false;
                 }
                 else if (_shapes.Count > 0)
                 {
-                    // Nếu không có shape được chọn, vẫn xóa shape cuối cùng
                     _shapes.RemoveAt(_shapes.Count - 1);
                 }
                 else
@@ -759,20 +760,15 @@ namespace WpfApp
             {
                 if (_shapes3D.Count > 0)
                 {
-                    var deleteShape3D = _shapes3D[^1]; // Lấy hình 3D cuối cùng
-                    foreach (var segment3D in deleteShape3D.Segments)
-                    {
-                        canvas3D.DeleteSegment(segment3D);
-                    }
-                    _animator.RemoveAnimationsForShape(deleteShape3D);
-                    _shapes3D.RemoveAt(_shapes3D.Count - 1);
+                    var shapeToDelete = _shapes3D.Last();
+                    DeleteShape3D(shapeToDelete);
                 }
                 else
                 {
                     MessageBox.Show("Không có hình 3D nào để xóa.");
                 }
             }
-            RedrawAllShapes(); // Vẽ lại toàn bộ
+            RedrawAllShapes();
         }
         private ShapeContainer? GetLastShape()
         {
@@ -781,7 +777,7 @@ namespace WpfApp
 
         private async void TranslateLeft_Click(object sender, RoutedEventArgs e)
         {
-            var shape = _selectedShape ?? GetLastShape(); // Use selected shape, or last one if none selected
+            var shape = _selectedShape ?? GetLastShape(); 
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(-50, 0));
             RedrawAllShapes();
@@ -800,7 +796,7 @@ namespace WpfApp
             var shape = _selectedShape ?? GetLastShape();
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(0, 50));
-            RedrawAllShapes(); // Added redraw to this method
+            RedrawAllShapes(); 
         }
 
         private async void TranslateDown_Click(object sender, RoutedEventArgs e)
@@ -860,7 +856,7 @@ namespace WpfApp
         {
             if (_shapes.Count == 0) return;
 
-            ShapeContainer shape = _selectedShape ?? _shapes[0]; // Use selected shape, or first one if none selected
+            ShapeContainer shape = _selectedShape ?? _shapes[0]; 
             Point symmetricPoint = new Point(0, 0);
             await ShapeAnimation.AnimateSymmetric(shape, symmetricPoint);
             RedrawAllShapes();
