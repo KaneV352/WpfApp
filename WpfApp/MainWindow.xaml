@@ -32,6 +32,7 @@
                         <ComboBoxItem Content="Ellipse" Tag="2D"/>
                         <ComboBoxItem Content="Rectangle" Tag="2D"/>
                         <ComboBoxItem Content="Triangle" Tag="2D"/>
+                        <ComboBoxItem Content="Selected Mode" Tag="2D"/>
                         <ComboBoxItem Content="Sphere" Tag="3D"/>
                         <ComboBoxItem Content="Cube" Tag="3D"/>
                         <ComboBoxItem Content="Cuboid" Tag="3D"/>
@@ -47,6 +48,17 @@
                     <StackPanel x:Name="InputFieldsPanel" Orientation="Horizontal" Margin="10,0,0,0"/>
                     <Button Content="Thêm hình" Margin="10,0,0,0" Click="AddShape_Click"/>
                     <Button Content="Xóa hình" Margin="5,0,0,0" Click="DeleteShapeButton_Click"/>
+                    <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
+                        <Button Content="← Trái" Click="TranslateLeft_Click" Margin="5,0,0,0"/>
+                        <Button Content="→ Phải" Click="TranslateRight_Click" Margin="5,0,0,0"/>
+                        <Button Content="↑ Lên" Click="TranslateUp_Click" Margin="5,0,0,0"/>
+                        <Button Content="↓ Xuống" Click="TranslateDown_Click" Margin="5,0,0,0"/>
+                        <Button Content="Xoay quanh gốc" Click="RotateOrigin_Click" Margin="10,0,5,0"/>
+                        <Button Content="Xoay quanh (0,0)" Click="RotateAround_Click"/>
+                    </StackPanel>
+                    <Button Content="Phóng to" Click="ScaleUp_Click" Margin="10,0,5,0"/>
+                    <Button Content="Thu nhỏ" Click="ScaleDown_Click"/>
+                    <Button Content="Đối xứng" Margin="5,0,0,0"  Click="SymmetricButton_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>
