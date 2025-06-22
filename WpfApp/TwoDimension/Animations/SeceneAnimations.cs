@@ -12,7 +12,7 @@ public static class SceneAnimations
 {
     public static void StartCharacterCoinScene(CartesianCanvas canvas2D, Animator _animator)
     {
-        // Tạo nhân vật và đồng xu
+        // char and coin
         var character = ShapeSample.CreateCharacter(canvas2D, new Point(-30, 8), 8);
         var coin = ShapeSample.CreateCoin(canvas2D, new Point(60, 0), 6);
 
@@ -32,7 +32,7 @@ public static class SceneAnimations
         _animator.AddAnimation(coinLoopScale, TimeSpan.Zero);
         _animator.AddAnimation(new TranslateAnimation2D(coin, liftOffset, liftDuration), liftDelay);
 
-        // Di chuyển nhân vật (không dùng foreach)
+        // Di chuyển nhân vật
         _animator.AddAnimation(new TranslateAnimation2D(character.Body, moveOffset, moveDuration), TimeSpan.Zero);
         _animator.AddAnimation(new TranslateAnimation2D(character.Head, moveOffset, moveDuration), TimeSpan.Zero);
         _animator.AddAnimation(new TranslateAnimation2D(character.LeftEye, moveOffset, moveDuration), TimeSpan.Zero);
@@ -50,5 +50,28 @@ public static class SceneAnimations
         _animator.AddAnimation(new LoopRotateAnimation(character.RightArm, swingAngle, swingDuration, character.RightArm.GetCenter), TimeSpan.Zero);
         _animator.AddAnimation(new LoopRotateAnimation(character.LeftLeg, -swingAngle, swingDuration, character.LeftLeg.GetCenter), TimeSpan.Zero);
         _animator.AddAnimation(new LoopRotateAnimation(character.RightLeg, swingAngle, swingDuration, character.RightLeg.GetCenter), TimeSpan.Zero);
+
+
+        // heart
+        var heartSize = 6.0;
+        var heartY = character.Head.GetCenter().Y + 20;
+        var heartSpacing = 30;
+
+        var heart1 = ShapeSample.CreateHeart(canvas2D, new Point(-heartSpacing, heartY), heartSize);
+        var heart2 = ShapeSample.CreateHeart(canvas2D, new Point(0, heartY), heartSize);
+        var heart3 = ShapeSample.CreateHeart(canvas2D, new Point(heartSpacing, heartY), heartSize);
+
+        var heartScaleDuration = TimeSpan.FromSeconds(0.4);
+        
+        //loop
+        _animator.AddAnimation(new LoopScaleAnimation(
+            heart1, 1.0, 1.0, 1.3, 1.3, heartScaleDuration, TimeSpan.FromSeconds(10), true), TimeSpan.Zero);
+
+        _animator.AddAnimation(new LoopScaleAnimation(
+            heart2, 1.0, 1.0, 1.3, 1.3, heartScaleDuration, TimeSpan.FromSeconds(10), true), TimeSpan.Zero);
+
+        _animator.AddAnimation(new LoopScaleAnimation(
+            heart3, 1.0, 1.0, 1.3, 1.3, heartScaleDuration, TimeSpan.FromSeconds(10), true), TimeSpan.Zero);
+
     }
 }
