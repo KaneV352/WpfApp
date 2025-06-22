@@ -79,6 +79,8 @@ namespace WpfApp
                 CoordPanel.Visibility = Visibility.Visible;
             if (InstructionTextBlock != null)
                 InstructionTextBlock.Text = "Chọn hình 2D, nhập thông số, sau đó nhấn 'Thêm hình'.";
+            if (CameraViewComboBox != null)
+                CameraViewComboBox.Visibility = Visibility.Collapsed;
         }
 
         private void Mode2DButton_Unchecked(object sender, RoutedEventArgs e)
@@ -104,6 +106,11 @@ namespace WpfApp
                 CoordPanel.Visibility = Visibility.Collapsed;
             if (InstructionTextBlock != null)
                 InstructionTextBlock.Text = "Chọn hình 3D, nhập thông số, sau đó nhấn 'Thêm hình'.";
+            if (CameraViewComboBox != null)
+            {
+                CameraViewComboBox.Visibility = Visibility.Visible;
+                CameraViewComboBox.SelectedIndex = 0; // Default to Cabinet
+            }
         }
 
         private void Mode3DButton_Unchecked(object sender, RoutedEventArgs e)
@@ -112,6 +119,30 @@ namespace WpfApp
             {
                 if (Mode3DButton != null)
                     Mode3DButton.IsChecked = true;
+            }
+        }
+        private void CameraViewComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (canvas3D == null || CameraViewComboBox == null || CameraViewComboBox.SelectedItem is not ComboBoxItem item)
+                return;
+
+            switch (item.Content?.ToString())
+            {
+                case "Cabinet":
+                    canvas3D.SetCabinetView();
+                    break;
+                case "Cavalier":
+                    canvas3D.SetCavalierView();
+                    break;
+                case "Front":
+                    canvas3D.SetFrontView();
+                    break;
+                case "Top":
+                    canvas3D.SetTopView();
+                    break;
+                case "Side":
+                    canvas3D.SetSideView();
+                    break;
             }
         }
 
