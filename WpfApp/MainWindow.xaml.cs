@@ -14,7 +14,7 @@ using WpfApp.TwoDimension.Animations;
 using WpfApp.TwoDimension.Models;
 using WpfApp.TwoDimension.Samples;
 using WpfApp.TwoDimension.Shapes;
-using System.Linq; // Added for .Average()
+using System.Linq; 
 using WpfApp.Animation;
 
 namespace WpfApp
@@ -30,19 +30,17 @@ namespace WpfApp
         private int _requiredPoints = 0;
         private string _pendingShape = null;
         private ShapeContainer? _selectedShape = null;
-        private bool _isSelectionMode = false; // New field to track selection mode
+        private bool _isSelectionMode = false;
 
-        private Animator _animator = new Animator(); // Instantiate the Animator
+        private Animator _animator = new Animator();
 
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
             
-            _animator.Start(); // Start the animator when the window loads
+            _animator.Start(); 
         }
-
-
         private void RunSceneAnimation_Click(object sender, RoutedEventArgs e)
         {
             SceneAnimations.StartCharacterCoinScene(canvas2D, _animator);
@@ -79,6 +77,8 @@ namespace WpfApp
                 CoordPanel.Visibility = Visibility.Visible;
             if (InstructionTextBlock != null)
                 InstructionTextBlock.Text = "Chọn hình 2D, nhập thông số, sau đó nhấn 'Thêm hình'.";
+            if (CameraViewComboBox != null)
+                CameraViewComboBox.Visibility = Visibility.Collapsed;
         }
 
         private void Mode2DButton_Unchecked(object sender, RoutedEventArgs e)
@@ -104,6 +104,11 @@ namespace WpfApp
                 CoordPanel.Visibility = Visibility.Collapsed;
             if (InstructionTextBlock != null)
                 InstructionTextBlock.Text = "Chọn hình 3D, nhập thông số, sau đó nhấn 'Thêm hình'.";
+            if (CameraViewComboBox != null)
+            {
+                CameraViewComboBox.Visibility = Visibility.Visible;
+                CameraViewComboBox.SelectedIndex = 0; // Default to Cabinet
+            }
         }
 
         private void Mode3DButton_Unchecked(object sender, RoutedEventArgs e)
@@ -112,6 +117,30 @@ namespace WpfApp
             {
                 if (Mode3DButton != null)
                     Mode3DButton.IsChecked = true;
+            }
+        }
+        private void CameraViewComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (canvas3D == null || CameraViewComboBox == null || CameraViewComboBox.SelectedItem is not ComboBoxItem item)
+                return;
+
+            switch (item.Content?.ToString())
+            {
+                case "Cabinet":
+                    canvas3D.SetCabinetView();
+                    break;
+                case "Cavalier":
+                    canvas3D.SetCavalierView();
+                    break;
+                case "Front":
+                    canvas3D.SetFrontView();
+                    break;
+                case "Top":
+                    canvas3D.SetTopView();
+                    break;
+                case "Side":
+                    canvas3D.SetSideView();
+                    break;
             }
         }
 
@@ -172,6 +201,11 @@ namespace WpfApp
                     case "Triangle":
                         _requiredPoints = 3;
                         break;
+                    case "Character1":
+                    case "Coin":
+                    case "Heart":
+                        _requiredPoints = 1;
+                        break;
                     default:
                         _requiredPoints = 0;
                         break;
@@ -196,6 +230,11 @@ namespace WpfApp
                         case "Ellipse":
                             InstructionTextBlock.Text = "Nhập bán trục X và Y cho ellipse.";
                             break;
+                        case "Character1":
+                        case "Coin":
+                        case "Heart":
+                            InstructionTextBlock.Text = "Nhập kích thước cho hình.";
+                            break;
                         default:
                             InstructionTextBlock.Text = "Chọn hình, nhập thông số, sau đó nhấn 'Thêm hình'.";
                             break;
@@ -219,6 +258,11 @@ namespace WpfApp
                         AddXYInputField("Điểm 1 (X, Y):");
                         AddXYInputField("Điểm 2 (X, Y):");
                         AddXYInputField("Điểm 3 (X, Y):");
+                        break;
+                    case "Character1":
+                    case "Coin":
+                    case "Heart":
+                        AddInputField("Kích thước:");
                         break;
                     case "Sphere":
                         AddInputField("Tâm X:");
@@ -325,11 +369,8 @@ namespace WpfApp
             if (canvas2D == null) return;
             var pos = e.GetPosition(canvas2D);
             var worldPos = canvas2D.CanvasToWorld(pos);
-            // Thử chọn 1 shape gần vị trí click
             var clickedPoint = worldPos;
             _shapeSelectedByClick(clickedPoint);
-
-            // Advanced: click-to-draw mode - Only allow if not in selection mode
             if (!_isSelectionMode && _requiredPoints > 0 && !string.IsNullOrEmpty(_pendingShape))
             {
                 _pendingPoints.Add(worldPos);
@@ -387,6 +428,18 @@ namespace WpfApp
                     var p3 = _pendingPoints[2];
                     newShape = new WpfApp.TwoDimension.Shapes.Triangle(canvas2D, p1, p2, p3, Brushes.Orange, 2, Brushes.Yellow);
                     break;
+                case "Character1":
+                    var char1Center = _pendingPoints[0];
+                    newShape = new Character1(canvas2D, char1Center, 40); 
+                    break;
+                case "Coin":
+                    var coinCenter = _pendingPoints[0];
+                    newShape = new Coin(canvas2D, coinCenter, 20);
+                    break;
+                case "Heart":
+                    var heartCenter = _pendingPoints[0];
+                    newShape = new Heart(canvas2D, heartCenter, 30, Brushes.Red, 2, Brushes.Pink); 
+                    break;
             }
 
             if (newShape != null)
@@ -404,9 +457,6 @@ namespace WpfApp
             _pendingPoints.Clear();
             _pendingShape = null;
             _requiredPoints = 0;
-
-
-            // Animation example
         }
 
         private void Canvas3D_Loaded(object sender, RoutedEventArgs e)
@@ -523,6 +573,30 @@ namespace WpfApp
                                 return;
                             }
                             newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
+                            break;
+                        case "Character1":
+                            if (values.Length < 1 || values[0] <= 0)
+                            {
+                                MessageBox.Show("Kích thước phải > 0.");
+                                return;
+                            }
+                            newShape = new Character1(canvas2D, new Point(drawX, drawY), values[0]);
+                            break;
+                        case "Coin":
+                            if (values.Length < 1 || values[0] <= 0)
+                            {
+                                MessageBox.Show("Kích thước phải > 0.");
+                                return;
+                            }
+                            newShape = new Coin(canvas2D, new Point(drawX, drawY), values[0]);
+                            break;
+                        case "Heart":
+                            if (values.Length < 1 || values[0] <= 0)
+                            {
+                                MessageBox.Show("Kích thước phải > 0.");
+                                return;
+                            }
+                            newShape = new Heart(canvas2D, new Point(drawX, drawY), values[0], Brushes.Red, 2, Brushes.Pink);
                             break;
                     }
                 }
@@ -651,6 +725,16 @@ namespace WpfApp
                 }
             }
         }
+        private void DeleteShape3D(ShapeContainer3D shape)
+        {
+            if (shape == null) return;
+            foreach (var segment in shape.Segments.ToList())
+            {
+                canvas3D.DeleteSegment(segment);
+            }
+            _shapes3D.Remove(shape);
+            _animator.RemoveAnimationsForShape(shape);
+        }
 
         private void DeleteShapeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -659,12 +743,11 @@ namespace WpfApp
                 if (_selectedShape != null && _shapes.Contains(_selectedShape))
                 {
                     _shapes.Remove(_selectedShape);
-                    _selectedShape = null; // Bỏ chọn sau khi xóa
-                    _isSelectionMode = false; // Exit selection mode
+                    _selectedShape = null; 
+                    _isSelectionMode = false;
                 }
                 else if (_shapes.Count > 0)
                 {
-                    // Nếu không có shape được chọn, vẫn xóa shape cuối cùng
                     _shapes.RemoveAt(_shapes.Count - 1);
                 }
                 else
@@ -677,20 +760,15 @@ namespace WpfApp
             {
                 if (_shapes3D.Count > 0)
                 {
-                    var deleteShape3D = _shapes3D[^1]; // Lấy hình 3D cuối cùng
-                    foreach (var segment3D in deleteShape3D.Segments)
-                    {
-                        canvas3D.DeleteSegment(segment3D);
-                    }
-                    _animator.RemoveAnimationsForShape(deleteShape3D);
-                    _shapes3D.RemoveAt(_shapes3D.Count - 1);
+                    var shapeToDelete = _shapes3D.Last();
+                    DeleteShape3D(shapeToDelete);
                 }
                 else
                 {
                     MessageBox.Show("Không có hình 3D nào để xóa.");
                 }
             }
-            RedrawAllShapes(); // Vẽ lại toàn bộ
+            RedrawAllShapes();
         }
         private ShapeContainer? GetLastShape()
         {
@@ -699,7 +777,7 @@ namespace WpfApp
 
         private async void TranslateLeft_Click(object sender, RoutedEventArgs e)
         {
-            var shape = _selectedShape ?? GetLastShape(); // Use selected shape, or last one if none selected
+            var shape = _selectedShape ?? GetLastShape(); 
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(-50, 0));
             RedrawAllShapes();
@@ -718,7 +796,7 @@ namespace WpfApp
             var shape = _selectedShape ?? GetLastShape();
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(0, 50));
-            RedrawAllShapes(); // Added redraw to this method
+            RedrawAllShapes(); 
         }
 
         private async void TranslateDown_Click(object sender, RoutedEventArgs e)
@@ -778,7 +856,7 @@ namespace WpfApp
         {
             if (_shapes.Count == 0) return;
 
-            ShapeContainer shape = _selectedShape ?? _shapes[0]; // Use selected shape, or first one if none selected
+            ShapeContainer shape = _selectedShape ?? _shapes[0]; 
             Point symmetricPoint = new Point(0, 0);
             await ShapeAnimation.AnimateSymmetric(shape, symmetricPoint);
             RedrawAllShapes();
