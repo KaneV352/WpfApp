@@ -6,17 +6,20 @@
         xmlns:td3="clr-namespace:WpfApp.ThreeDimension"
         Title="Shape Drawer" Height="600" Width="900">
     <Grid Margin="10">
-
         <Grid>
             <td:CartesianCanvas x:Name="canvas2D" Background="White"
                                 MouseLeftButtonDown="Canvas2D_MouseLeftButtonDown"
                                 Loaded="Canvas2D_Loaded"/>
             <td3:CartesianCanvas3D x:Name="canvas3D" Visibility="Collapsed" Loaded="Canvas3D_Loaded"/>
         </Grid>
-
         <Border Background="#80FFFFFF" Panel.ZIndex="10" CornerRadius="8" Padding="8"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0">
             <StackPanel>
+                <TextBlock x:Name="InstructionTextBlock"
+                           Text="Chọn hình, nhập thông số, sau đó nhấn 'Thêm hình'."
+                           Foreground="DarkBlue"
+                           FontWeight="Bold"
+                           Margin="0,0,0,8"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                     <ToggleButton x:Name="Mode2DButton" Content="2D" Width="60" Margin="0,0,10,0"
                                   Checked="Mode2DButton_Checked" Unchecked="Mode2DButton_Unchecked"/>

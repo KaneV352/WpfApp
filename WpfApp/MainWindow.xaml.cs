@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
@@ -51,6 +51,8 @@ namespace WpfApp
                 CoordYBox.Text = "0";
             if (CoordPanel != null)
                 CoordPanel.Visibility = Visibility.Visible;
+            if (InstructionTextBlock != null)
+                InstructionTextBlock.Text = "Chọn hình, nhập thông số, sau đó nhấn 'Thêm hình'.";
         }
 
         private void Mode2DButton_Checked(object sender, RoutedEventArgs e)
@@ -64,7 +66,9 @@ namespace WpfApp
             UpdateShapeComboBox("2D");
             UpdateCoordPanelForMode("2D");
             if (CoordPanel != null)
-                CoordPanel.Visibility = Visibility.Visible; 
+                CoordPanel.Visibility = Visibility.Visible;
+            if (InstructionTextBlock != null)
+                InstructionTextBlock.Text = "Chọn hình 2D, nhập thông số, sau đó nhấn 'Thêm hình'.";
         }
 
         private void Mode2DButton_Unchecked(object sender, RoutedEventArgs e)
@@ -87,7 +91,9 @@ namespace WpfApp
             UpdateShapeComboBox("3D");
             UpdateCoordPanelForMode("3D");
             if (CoordPanel != null)
-                CoordPanel.Visibility = Visibility.Collapsed; 
+                CoordPanel.Visibility = Visibility.Collapsed;
+            if (InstructionTextBlock != null)
+                InstructionTextBlock.Text = "Chọn hình 3D, nhập thông số, sau đó nhấn 'Thêm hình'.";
         }
 
         private void Mode3DButton_Unchecked(object sender, RoutedEventArgs e)
@@ -130,10 +136,7 @@ namespace WpfApp
 
             if (mode == "3D")
             {
-                // CoordPanel.Children.Add(new TextBlock { Text = "Z:", VerticalAlignment = VerticalAlignment.Center });
-                // var zBox = new TextBox { Name = "CoordZBox", Width = 50, Margin = new Thickness(5, 0, 0, 0) };
-                // zBox.TextChanged += CoordBox_TextChanged;
-                // CoordPanel.Children.Add(zBox);
+                // Add Z input if needed
             }
         }
 
@@ -165,63 +168,82 @@ namespace WpfApp
                 }
                 if (InputFieldsPanel != null)
                     InputFieldsPanel.Children.Clear();
+
+                // Update instructions
+                if (InstructionTextBlock != null)
+                {
+                    switch (shape)
+                    {
+                        case "Rectangle":
+                            InstructionTextBlock.Text = "Nhập tọa độ cho 2 điểm góc của hình chữ nhật.";
+                            break;
+                        case "Triangle":
+                            InstructionTextBlock.Text = "Nhập tọa độ cho 3 điểm của hình tam giác.";
+                            break;
+                        case "Circle":
+                            InstructionTextBlock.Text = "Nhập bán kính cho hình tròn.";
+                            break;
+                        case "Ellipse":
+                            InstructionTextBlock.Text = "Nhập bán trục X và Y cho ellipse.";
+                            break;
+                        default:
+                            InstructionTextBlock.Text = "Chọn hình, nhập thông số, sau đó nhấn 'Thêm hình'.";
+                            break;
+                    }
+                }
+
                 switch (shape)
                 {
                     case "Circle":
-                        AddInputField("Radius:");
+                        AddInputField("Bán kính:");
                         break;
                     case "Ellipse":
-                        AddInputField("Radius X:");
-                        AddInputField("Radius Y:");
+                        AddInputField("Bán trục X:");
+                        AddInputField("Bán trục Y:");
                         break;
                     case "Rectangle":
-                        AddInputField("TopLeft X:");
-                        AddInputField("TopLeft Y:");
-                        AddInputField("BottomRight X:");
-                        AddInputField("BottomRight Y:");
+                        AddXYInputField("Góc trên trái (X, Y):");
+                        AddXYInputField("Góc dưới phải (X, Y):");
                         break;
                     case "Triangle":
-                        AddInputField("Point1 X:");
-                        AddInputField("Point1 Y:");
-                        AddInputField("Point2 X:");
-                        AddInputField("Point2 Y:");
-                        AddInputField("Point3 X:");
-                        AddInputField("Point3 Y:");
+                        AddXYInputField("Điểm 1 (X, Y):");
+                        AddXYInputField("Điểm 2 (X, Y):");
+                        AddXYInputField("Điểm 3 (X, Y):");
                         break;
                     case "Sphere":
-                        AddInputField("Center X:");
-                        AddInputField("Center Y:");
-                        AddInputField("Center Z:");
-                        AddInputField("Radius:");
+                        AddInputField("Tâm X:");
+                        AddInputField("Tâm Y:");
+                        AddInputField("Tâm Z:");
+                        AddInputField("Bán kính:");
                         break;
                     case "Cube":
-                        AddInputField("BottomLeftBack X:");
-                        AddInputField("BottomLeftBack Y:");
-                        AddInputField("BottomLeftBack Z:");
-                        AddInputField("Side:");
+                        AddInputField("Góc X:");
+                        AddInputField("Góc Y:");
+                        AddInputField("Góc Z:");
+                        AddInputField("Cạnh:");
                         break;
                     case "Cuboid":
-                        AddInputField("Origin X:");
-                        AddInputField("Origin Y:");
-                        AddInputField("Origin Z:");
-                        AddInputField("Width:");
-                        AddInputField("Height:");
-                        AddInputField("Depth:");
+                        AddInputField("Gốc X:");
+                        AddInputField("Gốc Y:");
+                        AddInputField("Gốc Z:");
+                        AddInputField("Rộng:");
+                        AddInputField("Cao:");
+                        AddInputField("Sâu:");
                         break;
                     case "Pyramid":
-                        AddInputField("Base X:");
-                        AddInputField("Base Y:");
-                        AddInputField("Base Z:");
-                        AddInputField("Base Width:");
-                        AddInputField("Base Length:");
-                        AddInputField("Height:");
+                        AddInputField("Đáy X:");
+                        AddInputField("Đáy Y:");
+                        AddInputField("Đáy Z:");
+                        AddInputField("Rộng đáy:");
+                        AddInputField("Dài đáy:");
+                        AddInputField("Cao:");
                         break;
                     case "Cylinder":
-                        AddInputField("Base X:");
-                        AddInputField("Base Y:");
-                        AddInputField("Base Z:");
-                        AddInputField("Radius:");
-                        AddInputField("Height:");
+                        AddInputField("Tâm X:");
+                        AddInputField("Tâm Y:");
+                        AddInputField("Tâm Z:");
+                        AddInputField("Bán kính:");
+                        AddInputField("Cao:");
                         break;
                 }
             }
@@ -231,8 +253,22 @@ namespace WpfApp
         {
             if (InputFieldsPanel == null) return;
             var panel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 5, 0, 0) };
-            panel.Children.Add(new TextBlock { Text = label, Width = 80, VerticalAlignment = VerticalAlignment.Center });
-            panel.Children.Add(new TextBox { Width = 100 });
+            panel.Children.Add(new TextBlock { Text = label, Width = 90, VerticalAlignment = VerticalAlignment.Center });
+            panel.Children.Add(new TextBox { Width = 80 });
+            InputFieldsPanel.Children.Add(panel);
+        }
+
+        // New: Add XY input field for grouped X/Y entry
+        private void AddXYInputField(string label)
+        {
+            if (InputFieldsPanel == null) return;
+            var panel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 5, 0, 0) };
+            panel.Children.Add(new TextBlock { Text = label, Width = 130, VerticalAlignment = VerticalAlignment.Center });
+            var xBox = new TextBox { Width = 50, Margin = new Thickness(0, 0, 5, 0) };
+            var yBox = new TextBox { Width = 50 };
+            panel.Children.Add(xBox);
+            panel.Children.Add(new TextBlock { Text = ",", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0, 2, 0) });
+            panel.Children.Add(yBox);
             InputFieldsPanel.Children.Add(panel);
         }
 
@@ -375,61 +411,92 @@ namespace WpfApp
 
                 string shape = item.Content?.ToString() ?? string.Empty;
                 if (InputFieldsPanel == null) return;
-                double[] values = new double[InputFieldsPanel.Children.Count];
-                for (int i = 0; i < InputFieldsPanel.Children.Count; i++)
-                {
-                    if (InputFieldsPanel.Children[i] is StackPanel panel &&
-                        panel.Children[1] is TextBox tb)
-                    {
-                        if (!double.TryParse(tb.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
-                        {
-                            MessageBox.Show("Vui lòng nhập số hợp lệ cho tất cả trường.");
-                            return;
-                        }
-                        values[i] = val;
-                    }
-                }
 
                 ShapeContainer newShape = null;
-                switch (shape)
+
+                if (shape == "Rectangle" || shape == "Triangle")
                 {
-                    case "Circle":
-                        if (values.Length < 1 || values[0] <= 0)
+                    var points = new List<Point>();
+                    foreach (StackPanel panel in InputFieldsPanel.Children)
+                    {
+                        if (panel.Children.Count >= 4 &&
+                            panel.Children[1] is TextBox xBox &&
+                            panel.Children[3] is TextBox yBox)
                         {
-                            MessageBox.Show("Bán kính phải > 0.");
+                            if (string.IsNullOrWhiteSpace(xBox.Text) || string.IsNullOrWhiteSpace(yBox.Text))
+                            {
+                                MessageBox.Show("Vui lòng nhập đầy đủ tọa độ cho tất cả các điểm.");
+                                return;
+                            }
+                            if (!double.TryParse(xBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double x) ||
+                                !double.TryParse(yBox.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
+                            {
+                                MessageBox.Show("Tọa độ phải là số hợp lệ.");
+                                return;
+                            }
+                            points.Add(new Point(x, y));
+                        }
+                    }
+                    if (shape == "Rectangle")
+                    {
+                        if (points.Count < 2)
+                        {
+                            MessageBox.Show("Vui lòng nhập đủ 2 điểm cho hình chữ nhật.");
                             return;
                         }
-                        newShape = new Circle(canvas2D, new Point(drawX, drawY), values[0], Brushes.Blue, 2, Brushes.LightBlue);
-                        break;
-                    case "Ellipse":
-                        if (values.Length < 2 || values[0] <= 0 || values[1] <= 0)
+                        newShape = new Rectangle(canvas2D, points[0], points[1], Brushes.Green, 2, Brushes.LightGreen);
+                    }
+                    else if (shape == "Triangle")
+                    {
+                        if (points.Count < 3)
                         {
-                            MessageBox.Show("Bán trục X và Y phải > 0.");
+                            MessageBox.Show("Vui lòng nhập đủ 3 điểm cho hình tam giác.");
                             return;
                         }
-                        newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
-                        break;
-                    case "Rectangle":
-                        if (values.Length < 4)
+                        newShape = new WpfApp.TwoDimension.Shapes.Triangle(canvas2D, points[0], points[1], points[2], Brushes.Orange, 2, Brushes.Yellow);
+                    }
+                }
+                else
+                {
+                    double[] values = new double[InputFieldsPanel.Children.Count];
+                    for (int i = 0; i < InputFieldsPanel.Children.Count; i++)
+                    {
+                        if (InputFieldsPanel.Children[i] is StackPanel panel &&
+                            panel.Children[1] is TextBox tb)
                         {
-                            MessageBox.Show("Vui lòng nhập đủ 4 giá trị cho hình chữ nhật.");
-                            return;
+                            if (string.IsNullOrWhiteSpace(tb.Text))
+                            {
+                                MessageBox.Show("Vui lòng nhập đầy đủ thông số.");
+                                return;
+                            }
+                            if (!double.TryParse(tb.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
+                            {
+                                MessageBox.Show("Giá trị phải là số hợp lệ.");
+                                return;
+                            }
+                            values[i] = val;
                         }
-                        var topLeft = new Point(values[0], values[1]);
-                        var bottomRight = new Point(values[2], values[3]);
-                        newShape = new Rectangle(canvas2D, topLeft, bottomRight, Brushes.Green, 2, Brushes.LightGreen);
-                        break;
-                    case "Triangle":
-                        if (values.Length < 6)
-                        {
-                            MessageBox.Show("Vui lòng nhập đủ 6 giá trị cho hình tam giác.");
-                            return;
-                        }
-                        var p1 = new Point(values[0], values[1]);
-                        var p2 = new Point(values[2], values[3]);
-                        var p3 = new Point(values[4], values[5]);
-                        newShape = new WpfApp.TwoDimension.Shapes.Triangle(canvas2D, p1, p2, p3, Brushes.Orange, 2, Brushes.Yellow);
-                        break;
+                    }
+
+                    switch (shape)
+                    {
+                        case "Circle":
+                            if (values.Length < 1 || values[0] <= 0)
+                            {
+                                MessageBox.Show("Bán kính phải > 0.");
+                                return;
+                            }
+                            newShape = new Circle(canvas2D, new Point(drawX, drawY), values[0], Brushes.Blue, 2, Brushes.LightBlue);
+                            break;
+                        case "Ellipse":
+                            if (values.Length < 2 || values[0] <= 0 || values[1] <= 0)
+                            {
+                                MessageBox.Show("Bán trục X và Y phải > 0.");
+                                return;
+                            }
+                            newShape = new Eclipse(canvas2D, new Point(drawX, drawY), values[0], values[1], Brushes.Red, 2, Brushes.LightCoral);
+                            break;
+                    }
                 }
 
                 if (newShape != null)
@@ -450,9 +517,14 @@ namespace WpfApp
                     if (InputFieldsPanel.Children[i] is StackPanel panel &&
                         panel.Children[1] is TextBox tb)
                     {
+                        if (string.IsNullOrWhiteSpace(tb.Text))
+                        {
+                            MessageBox.Show("Vui lòng nhập đầy đủ thông số.");
+                            return;
+                        }
                         if (!double.TryParse(tb.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
                         {
-                            MessageBox.Show("Vui lòng nhập số hợp lệ cho tất cả trường.");
+                            MessageBox.Show("Giá trị phải là số hợp lệ.");
                             return;
                         }
                         values[i] = val;
