@@ -22,6 +22,7 @@
                 <ComboBoxItem Content="Ellipse" Tag="2D"/>
                 <ComboBoxItem Content="Rectangle" Tag="2D"/>
                 <ComboBoxItem Content="Triangle" Tag="2D"/>
+                <ComboBoxItem Content="Select Mode" Tag="2D"/>
                 <ComboBoxItem Content="Sphere" Tag="3D"/>
                 <ComboBoxItem Content="Cube" Tag="3D"/>
                 <ComboBoxItem Content="Pyramid" Tag="3D"/>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq; // Added for .Average()
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,11 +19,13 @@ namespace WpfApp
         private double drawY = 0;
         private double drawZ = 0; // For 3D mode
         private readonly List<ShapeContainer> _shapes = new();
+        private ShapeContainer? _selectedShape = null;
+        private bool _isSelectionMode = false; // New field to track selection mode
 
         // Advanced: For click-to-draw
         private List<Point> _pendingPoints = new();
         private int _requiredPoints = 0;
-        private string _pendingShape = null;
+        private string? _pendingShape = null; // Changed to nullable string
 
         public MainWindow()
         {
@@ -92,7 +95,7 @@ namespace WpfApp
             if (ShapeComboBox == null) return;
             foreach (ComboBoxItem item in ShapeComboBox.Items)
             {
-                string tag = item.Tag?.ToString();
+                string? tag = item.Tag?.ToString(); // Changed to nullable string
                 if (mode == "2D" && tag == "3D")
                     item.Visibility = Visibility.Collapsed;
                 else if (mode == "3D" && tag == "2D")
@@ -214,14 +217,45 @@ namespace WpfApp
                 drawZ = z;
         }
 
+        private void _shapeSelectedByClick(Point clickPoint)
+        {
+            const double threshold = 5.0; // bán kính tối đa tính là "gần"
+
+            ShapeContainer? found = null;
+            foreach (var shape in _shapes)
+            {
+                foreach (var seg in shape.Segments)
+                {
+                    foreach (var p in seg.WorldPoints)
+                    {
+                        if ((p - clickPoint).Length <= threshold)
+                        {
+                            found = shape;
+                            break;
+                        }
+                    }
+                    if (found != null) break;
+                }
+                if (found != null) break;
+            }
+
+            _selectedShape = found;
+            _isSelectionMode = (_selectedShape != null); // Update selection mode
+            RedrawAllShapes();
+        }
+
         private void Canvas2D_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+
             if (canvas2D == null) return;
             var pos = e.GetPosition(canvas2D);
             var worldPos = canvas2D.CanvasToWorld(pos);
+            // Thử chọn 1 shape gần vị trí click
+            var clickedPoint = worldPos;
+            _shapeSelectedByClick(clickedPoint);
 
-            // Advanced: click-to-draw mode
-            if (_requiredPoints > 0 && !string.IsNullOrEmpty(_pendingShape))
+            // Advanced: click-to-draw mode - Only allow if not in selection mode
+            if (!_isSelectionMode && _requiredPoints > 0 && !string.IsNullOrEmpty(_pendingShape))
             {
                 _pendingPoints.Add(worldPos);
                 // Optionally, show a temporary point
@@ -235,16 +269,19 @@ namespace WpfApp
                 return;
             }
 
-            // Default: update coordinate input boxes
-            if (CoordXBox != null)
-                CoordXBox.Text = worldPos.X.ToString("0.##", CultureInfo.InvariantCulture);
-            if (CoordYBox != null)
-                CoordYBox.Text = worldPos.Y.ToString("0.##", CultureInfo.InvariantCulture);
+            // Default: update coordinate input boxes if no shape is selected
+            if (_selectedShape == null) // Only update if not in selection mode
+            {
+                if (CoordXBox != null)
+                    CoordXBox.Text = worldPos.X.ToString("0.##", CultureInfo.InvariantCulture);
+                if (CoordYBox != null)
+                    CoordYBox.Text = worldPos.Y.ToString("0.##", CultureInfo.InvariantCulture);
+            }
         }
 
         private void DrawShapeFromPoints()
         {
-            ShapeContainer newShape = null;
+            ShapeContainer? newShape = null; // Changed to nullable
             switch (_pendingShape)
             {
                 case "Circle":
@@ -347,7 +384,7 @@ namespace WpfApp
                 }
             }
 
-            ShapeContainer newShape = null;
+            ShapeContainer? newShape = null; // Changed to nullable
             switch (shape)
             {
                 case "Circle":
@@ -412,28 +449,24 @@ namespace WpfApp
 
         private void DeleteShapeButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_shapes.Count > 0)
+            if (_selectedShape != null && _shapes.Contains(_selectedShape))
             {
+                _shapes.Remove(_selectedShape);
+                _selectedShape = null; // Bỏ chọn sau khi xóa
+                _isSelectionMode = false; // Exit selection mode
+            }
+            else if (_shapes.Count > 0)
+            {
+                // Nếu không có shape được chọn, vẫn xóa shape cuối cùng
                 _shapes.RemoveAt(_shapes.Count - 1);
-                if (canvas2D != null)
-                    canvas2D.ClearAll();
-                foreach (var shape in _shapes)
-                {
-                    foreach (var segment in shape.Segments)
-                    {
-                        if (segment is FillSegment fillSegment)
-                            canvas2D.AddFill(fillSegment);
-                        else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
-                            canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
-                        else if (segment is PointSegment pointSegment)
-                            canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
-                    }
-                }
             }
             else
             {
                 MessageBox.Show("Không có hình nào để xóa.");
+                return;
             }
+
+            RedrawAllShapes(); // Vẽ lại toàn bộ
         }
         private ShapeContainer? GetLastShape()
         {
@@ -442,7 +475,7 @@ namespace WpfApp
 
         private async void TranslateLeft_Click(object sender, RoutedEventArgs e)
         {
-            var shape = GetLastShape();
+            var shape = _selectedShape ?? GetLastShape(); // Use selected shape, or last one if none selected
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(-50, 0));
             RedrawAllShapes();
@@ -450,7 +483,7 @@ namespace WpfApp
 
         private async void TranslateRight_Click(object sender, RoutedEventArgs e)
         {
-            var shape = GetLastShape();
+            var shape = _selectedShape ?? GetLastShape();
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(50, 0));
             RedrawAllShapes();
@@ -458,14 +491,15 @@ namespace WpfApp
 
         private async void TranslateUp_Click(object sender, RoutedEventArgs e)
         {
-            var shape = GetLastShape();
+            var shape = _selectedShape ?? GetLastShape();
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(0, 50));
+            RedrawAllShapes(); // Added redraw to this method
         }
 
         private async void TranslateDown_Click(object sender, RoutedEventArgs e)
         {
-            var shape = GetLastShape();
+            var shape = _selectedShape ?? GetLastShape();
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(0, -50));
             RedrawAllShapes();
@@ -474,7 +508,7 @@ namespace WpfApp
 
         private async void RotateOrigin_Click(object sender, RoutedEventArgs e)
         {
-            var shape = GetLastShape();
+            var shape = _selectedShape ?? GetLastShape();
             if (shape == null) return;
 
             var allPoints = shape.Segments.SelectMany(s => s.WorldPoints).ToList();
@@ -490,7 +524,7 @@ namespace WpfApp
 
         private async void RotateAround_Click(object sender, RoutedEventArgs e)
         {
-            var shape = GetLastShape();
+            var shape = _selectedShape ?? GetLastShape();
             if (shape != null)
                 await ShapeAnimation.AnimateRotate(shape, new Point(0, 0), 360);
             RedrawAllShapes();
@@ -498,7 +532,7 @@ namespace WpfApp
 
         private async void ScaleUp_Click(object sender, RoutedEventArgs e)
         {
-            var shape = GetLastShape();
+            var shape = _selectedShape ?? GetLastShape();
             if (shape == null) return;
 
             Point center = GetShapeCenter(shape);
@@ -508,7 +542,7 @@ namespace WpfApp
 
         private async void ScaleDown_Click(object sender, RoutedEventArgs e)
         {
-            var shape = GetLastShape();
+            var shape = _selectedShape ?? GetLastShape();
             if (shape == null) return;
 
             Point center = GetShapeCenter(shape);
@@ -520,7 +554,7 @@ namespace WpfApp
         {
             if (_shapes.Count == 0) return;
 
-            ShapeContainer shape = _shapes[0];
+            ShapeContainer shape = _selectedShape ?? _shapes[0]; // Use selected shape, or first one if none selected
             Point symmetricPoint = new Point(0, 0);
             await ShapeAnimation.AnimateSymmetric(shape, symmetricPoint);
             RedrawAllShapes();
@@ -538,18 +572,28 @@ namespace WpfApp
             if (canvas2D == null)
                 return;
 
-            canvas2D.ClearAll(); 
+            canvas2D.ClearAll();
 
             foreach (var shape in _shapes)
             {
+                bool isSelected = shape == _selectedShape;
+
                 foreach (var segment in shape.Segments)
                 {
                     if (segment is FillSegment fillSegment)
                         canvas2D.AddFill(fillSegment);
                     else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
-                        canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
+                    {
+                        var stroke = isSelected ? Brushes.Magenta : lineSegment.Stroke;
+                        var thickness = isSelected ? lineSegment.Thickness + 1.5 : lineSegment.Thickness;
+                        canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, stroke, thickness);
+                    }
                     else if (segment is PointSegment pointSegment)
-                        canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
+                    {
+                        var fill = isSelected ? Brushes.Magenta : pointSegment.Fill;
+                        var size = isSelected ? pointSegment.Size + 1 : pointSegment.Size;
+                        canvas2D.AddPoint(pointSegment.WorldPoint, fill, size);
+                    }
                 }
             }
         }
