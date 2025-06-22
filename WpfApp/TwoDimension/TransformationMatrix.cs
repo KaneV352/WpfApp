@@ -19,10 +19,15 @@ public static class TransformationMatrix
         return rotationAtPoint.Transform(point);
     }
     
-    public static Point Scale(Point point, double scaleX, double scaleY)
+    public static Point Scale(Point point, double scaleX, double scaleY, Point center)
     {
         Matrix scaleMatrix = new Matrix();
+        // Translate the center to the origin
+        scaleMatrix.Translate(-center.X, -center.Y);
+        // Apply scaling
         scaleMatrix.Scale(scaleX, scaleY);
+        // Translate back from the origin
+        scaleMatrix.Translate(center.X, center.Y);
         return scaleMatrix.Transform(point);
     }
     

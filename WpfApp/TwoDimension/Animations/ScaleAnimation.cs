@@ -22,6 +22,6 @@ public class ScaleAnimation : Animation2D
         double scaleY = 1 + _scaleYPerMillisecond * deltaTime.TotalMilliseconds;
 
         // Apply the scaling transformation to the shape
-        Shape.TransformShape(p => TransformationMatrix.Scale(p, scaleX, scaleY));
+        Shape.TransformShape(p => TransformationMatrix.Scale(p, scaleX, scaleY, Shape.GetCenter()));
     }
 }
