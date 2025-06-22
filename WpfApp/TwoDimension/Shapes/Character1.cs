@@ -8,10 +8,10 @@ public class Character1 : ShapeContainer
 {
     public Circle Body { get; private set; }
     public Circle Head { get; private set; }
-    public Triangle LeftEye { get; private set; }
-    public Triangle RightEye { get; private set; }
-    public Rectangle LeftLeg { get; private set; }
-    public Rectangle RightLeg { get; private set; }
+    public ShapeContainer LeftEye { get; set; }
+    public ShapeContainer RightEye { get; set; }
+    public Eclipse LeftLeg { get; private set; }
+    public Eclipse RightLeg { get; private set; }
     public Rectangle LeftArm { get; private set; }
     public Rectangle RightArm { get; private set; }
 
@@ -33,30 +33,27 @@ public class Character1 : ShapeContainer
         double eyeOffsetX = headRadius * 0.5;
         double eyeOffsetY = headRadius * 0.1;
 
-        var leftEyeTop = new Point(headCenter.X - eyeOffsetX, headCenter.Y + eyeOffsetY);
-        var leftEyeLeft = new Point(leftEyeTop.X - eyeSize / 2, leftEyeTop.Y - eyeSize);
-        var leftEyeRight = new Point(leftEyeTop.X + eyeSize / 2, leftEyeTop.Y - eyeSize);
-        LeftEye = new Triangle(canvas, leftEyeLeft, leftEyeRight, leftEyeTop, Brushes.DarkBlue, 1, Brushes.DarkBlue);
+        var leftEyePoint = new Point(headCenter.X - eyeOffsetX, headCenter.Y + eyeOffsetY);
+        LeftEye = new Heart(canvas, leftEyePoint, eyeSize, Brushes.Red, 1, Brushes.Red);
         Segments.AddRange(LeftEye.Segments);
 
-        var rightEyeTop = new Point(headCenter.X + eyeOffsetX, headCenter.Y + eyeOffsetY);
-        var rightEyeLeft = new Point(rightEyeTop.X - eyeSize / 2, rightEyeTop.Y - eyeSize);
-        var rightEyeRight = new Point(rightEyeTop.X + eyeSize / 2, rightEyeTop.Y - eyeSize);
-        RightEye = new Triangle(canvas, rightEyeLeft, rightEyeRight, rightEyeTop, Brushes.DarkBlue, 1, Brushes.DarkBlue);
+        var rightEyePoint = new Point(headCenter.X + eyeOffsetX, headCenter.Y + eyeOffsetY);
+        RightEye = new Heart(canvas, rightEyePoint, eyeSize, Brushes.Red, 1, Brushes.Red);
         Segments.AddRange(RightEye.Segments);
 
-        // Legs
-        var legHeight = bodyRadius * 0.6;
-        var legWidth = bodyRadius * 0.3;
+        // Calculate leg dimensions
+        double legHeight = bodyRadius * 0.6;
+        double legWidth = bodyRadius * 0.4;
+        
+        // Calculate leg centers
+        var leftLegCenter = new Point(center.X - legWidth, center.Y - bodyRadius - legHeight / 2);
+        var rightLegCenter = new Point(center.X + legWidth, center.Y - bodyRadius - legHeight / 2);
 
-        var leftLegTopLeft = new Point(center.X - bodyRadius * 0.5, center.Y - bodyRadius);
-        var leftLegBottomRight = new Point(leftLegTopLeft.X + legWidth, leftLegTopLeft.Y - legHeight);
-        LeftLeg = new Rectangle(canvas, leftLegTopLeft, leftLegBottomRight, Brushes.DarkGreen, 1, Brushes.DarkGreen);
+// Create legs
+        LeftLeg = new Eclipse(canvas, leftLegCenter, legWidth, legHeight, Brushes.DarkGreen, 1, Brushes.DarkGreen);
         Segments.AddRange(LeftLeg.Segments);
 
-        var rightLegTopLeft = new Point(center.X + bodyRadius * 0.2, center.Y - bodyRadius);
-        var rightLegBottomRight = new Point(rightLegTopLeft.X + legWidth, rightLegTopLeft.Y - legHeight);
-        RightLeg = new Rectangle(canvas, rightLegTopLeft, rightLegBottomRight, Brushes.DarkGreen, 1, Brushes.DarkGreen);
+        RightLeg = new Eclipse(canvas, rightLegCenter, legWidth, legHeight, Brushes.DarkGreen, 1, Brushes.DarkGreen);
         Segments.AddRange(RightLeg.Segments);
 
         // Arms

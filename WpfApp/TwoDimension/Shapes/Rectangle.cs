@@ -13,6 +13,8 @@ public class Rectangle : ShapeContainer
     private SolidColorBrush green;
     private int v3;
     private SolidColorBrush lightGreen;
+    public double Width { get; private set; }
+    public double Height { get; private set; }
 
     public Rectangle(CartesianCanvas canvas, Point topLeft, Point bottomRight, Brush strokeColor, double thickness = 1, Brush? fillColor = null)
     {
@@ -50,6 +52,9 @@ public class Rectangle : ShapeContainer
         var polygon = new FillSegment(points, fillColor, 1, fillColor);
         canvas.AddFill(polygon);
         Segments.Add(polygon);
+        
+        Width = bottomRight.X - topLeft.X;
+        Height = topLeft.Y - bottomRight.Y;
     }
 
     public Rectangle(CartesianCanvas canvas2D, Point point, double v1, double v2, SolidColorBrush green, int v3, SolidColorBrush lightGreen)
