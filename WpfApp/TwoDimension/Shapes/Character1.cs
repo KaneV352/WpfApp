@@ -47,19 +47,21 @@ public class Character1 : ShapeContainer
 
         // Legs
         var legHeight = bodyRadius * 0.6;
+        var legWidth = (bodyRadius * 0.3);
+
         LeftLeg = new Rectangle(
             canvas,
-            new Point(center.X - bodyRadius * 0.5, center.Y - bodyRadius),
-            bodyRadius * 0.3,
-            new Point(center.X - bodyRadius * 0.2, center.Y - bodyRadius - legHeight),
+            new Point(center.X - bodyRadius * 0.5, center.Y - bodyRadius - legHeight),
+            legWidth,
+            legHeight,
             Brushes.DarkGreen, 1, Brushes.DarkGreen);
         Segments.AddRange(LeftLeg.Segments);
 
         RightLeg = new Rectangle(
             canvas,
-            new Point(center.X + bodyRadius * 0.2, center.Y - bodyRadius),
-            bodyRadius * 0.3,
-            new Point(center.X + bodyRadius * 0.5, center.Y - bodyRadius - legHeight),
+            new Point(center.X + bodyRadius * 0.2, center.Y - bodyRadius - legHeight),
+            legWidth,
+            legHeight,
             Brushes.DarkGreen, 1, Brushes.DarkGreen);
         Segments.AddRange(RightLeg.Segments);
 
@@ -69,17 +71,17 @@ public class Character1 : ShapeContainer
 
         LeftArm = new Rectangle(
             canvas,
-            new Point(center.X - bodyRadius, center.Y),
+            new Point(center.X - bodyRadius, center.Y - armHeight),
             armWidth,
-            new Point(center.X - bodyRadius + armWidth, center.Y - armHeight),
+            armHeight,
             Brushes.DarkRed, 1, Brushes.DarkRed);
         Segments.AddRange(LeftArm.Segments);
 
         RightArm = new Rectangle(
             canvas,
-            new Point(center.X + bodyRadius - armWidth, center.Y),
+            new Point(center.X + bodyRadius - armWidth, center.Y - armHeight),
             armWidth,
-            new Point(center.X + bodyRadius, center.Y - armHeight),
+            armHeight,
             Brushes.DarkRed, 1, Brushes.DarkRed);
         Segments.AddRange(RightArm.Segments);
     }
