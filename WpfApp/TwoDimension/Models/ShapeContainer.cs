@@ -13,4 +13,17 @@ public class ShapeContainer
             Segments[i].TransformPoints(transformation, i == Segments.Count - 1);
         }
     }
+    
+    public Point GetCenter()
+    {
+        var allPoints = Segments
+            .Where(s => s is not FillSegment)
+            .SelectMany(s => s.WorldPoints)
+            .ToList();
+        if (!allPoints.Any()) return new Point(0, 0);
+
+        double avgX = allPoints.Average(p => p.X);
+        double avgY = allPoints.Average(p => p.Y);
+        return new Point(avgX, avgY);
+    }
 }

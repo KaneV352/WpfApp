@@ -12,6 +12,7 @@ using WpfApp.ThreeDimension;
 using WpfApp.ThreeDimension.Models;
 using WpfApp.ThreeDimension.Shapes;
 using System.Windows.Media.Media3D;
+using WpfApp.TwoDimension.Animations;
 
 namespace WpfApp
 {
@@ -21,15 +22,19 @@ namespace WpfApp
         private double drawY = 0;
         private double drawZ = 0;
         private readonly List<ShapeContainer> _shapes = new();
-        private readonly List<object> _shapes3D = new();
+        private readonly List<ShapeContainer3D> _shapes3D = new();
         private List<Point> _pendingPoints = new();
         private int _requiredPoints = 0;
         private string _pendingShape = null;
+        
+        private Animator _animator = new Animator(); // Instantiate the Animator
 
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
+            
+            _animator.Start(); // Start the animator when the window loads
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -309,55 +314,39 @@ namespace WpfApp
             if (newShape != null)
             {
                 _shapes.Add(newShape);
-                foreach (var segment in newShape.Segments)
-                {
-                    if (segment is FillSegment fillSegment)
-                        canvas2D.AddFill(fillSegment);
-                    else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
-                        canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
-                    else if (segment is PointSegment pointSegment)
-                        canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
-                }
             }
         }
 
         private void Canvas2D_Loaded(object sender, RoutedEventArgs e)
         {
-            // Vẽ trục tọa độ OX, OY
             if (canvas2D == null) return;
-            double width = canvas2D.ActualWidth;
-            double height = canvas2D.ActualHeight;
-            // Trục X (ngang)
-            canvas2D.AddLine(
-                new Point(0, height / 2),
-                new Point(width, height / 2),
-                Brushes.Gray, 1);
-            // Trục Y (dọc)
-            canvas2D.AddLine(
-                new Point(width / 2, 0),
-                new Point(width / 2, height),
-                Brushes.Gray, 1);
+
+            canvas2D.ClearAll();
+            _shapes.Clear();
+            _pendingPoints.Clear();
+            _pendingShape = null;
+            _requiredPoints = 0;
         }
 
         private void Canvas3D_Loaded(object sender, RoutedEventArgs e)
         {
             if (canvas3D == null) return;
 
-            canvas3D.ClearContent();
-            // x
-            canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(10, 0, 0), Colors.Red, 0.1);
-            // y
-            canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(0, 10, 0), Colors.Green, 0.1);
-            // z
-            canvas3D.AddLine(new Point3D(0, 0, 0), new Point3D(0, 0, 10), Colors.Blue, 0.1);
-            double tickSize = 0.12;
-            int tickCount = 3;
-            for (int i = 1; i <= tickCount; i++)
-            {
-                canvas3D.AddLine(new Point3D(i, -tickSize, 0), new Point3D(i, tickSize, 0), Colors.Red, 0.04);
-                canvas3D.AddLine(new Point3D(-tickSize, i, 0), new Point3D(tickSize, i, 0), Colors.Green, 0.04);
-                canvas3D.AddLine(new Point3D(0, -tickSize, i), new Point3D(0, tickSize, i), Colors.Blue, 0.04);
-            }
+            canvas3D.ClearAll();
+            _shapes3D.Clear();
+            _pendingPoints.Clear();
+            _pendingShape = null;
+            _requiredPoints = 0;
+            drawX = 0;
+            drawY = 0;
+            drawZ = 0;
+            if (CoordXBox != null)
+                CoordXBox.Text = "0";
+            if (CoordYBox != null)
+                CoordYBox.Text = "0";
+            var zBox = FindName("CoordZBox") as TextBox;
+            if (zBox != null)
+                zBox.Text = "0";
         }
 
         private void AddShape_Click(object sender, RoutedEventArgs e)
@@ -429,15 +418,6 @@ namespace WpfApp
                 if (newShape != null)
                 {
                     _shapes.Add(newShape);
-                    foreach (var segment in newShape.Segments)
-                    {
-                        if (segment is FillSegment fillSegment)
-                            canvas2D.AddFill(fillSegment);
-                        else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
-                            canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
-                        else if (segment is PointSegment pointSegment)
-                            canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
-                    }
                 }
             }
             else if (canvas3D != null && canvas3D.Visibility == Visibility.Visible)
@@ -462,7 +442,7 @@ namespace WpfApp
                     }
                 }
 
-                object newShape3D = null;
+                ShapeContainer3D newShape3D = null;
                 switch (shape)
                 {
                     case "Cylinder":
@@ -561,20 +541,13 @@ namespace WpfApp
             {
                 if (_shapes.Count > 0)
                 {
-                    _shapes.RemoveAt(_shapes.Count - 1);
-                    canvas2D.ClearAll();
-                    foreach (var shape in _shapes)
+                    var deleteShape = _shapes[^1]; // Lấy hình cuối cùng
+                    foreach (var segment in deleteShape.Segments)
                     {
-                        foreach (var segment in shape.Segments)
-                        {
-                            if (segment is FillSegment fillSegment)
-                                canvas2D.AddFill(fillSegment);
-                            else if (segment is WpfApp.TwoDimension.Models.LineSegment lineSegment)
-                                canvas2D.AddLine(lineSegment.WorldStart, lineSegment.WorldEnd, lineSegment.Stroke, lineSegment.Thickness);
-                            else if (segment is PointSegment pointSegment)
-                                canvas2D.AddPoint(pointSegment.WorldPoint, pointSegment.Fill, pointSegment.Size);
-                        }
+                        canvas2D.DeleteSegment(segment);
                     }
+                    _animator.RemoveAnimationsForShape(deleteShape);
+                    _shapes.RemoveAt(_shapes.Count - 1); // Xóa hình cuối cùng
                 }
                 else
                 {
@@ -585,16 +558,13 @@ namespace WpfApp
             {
                 if (_shapes3D.Count > 0)
                 {
-                    _shapes3D.RemoveAt(_shapes3D.Count - 1);
-                    canvas3D.ClearContent();
-                    foreach (var shape3D in _shapes3D)
+                    var deleteShape3D = _shapes3D[^1]; // Lấy hình 3D cuối cùng
+                    foreach (var segment3D in deleteShape3D.Segments)
                     {
-                        var method = shape3D.GetType().GetMethod("Draw");
-                        if (method != null)
-                        {
-                            method.Invoke(shape3D, null);
-                        }
+                        canvas3D.DeleteSegment(segment3D);
                     }
+                    _animator.RemoveAnimationsForShape(deleteShape3D);
+                    _shapes3D.RemoveAt(_shapes3D.Count - 1);
                 }
                 else
                 {
