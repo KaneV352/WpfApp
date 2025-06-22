@@ -47,40 +47,30 @@ public class Character1 : ShapeContainer
 
         // Legs
         var legHeight = bodyRadius * 0.6;
-        LeftLeg = new Rectangle(
-            canvas,
-            new Point(center.X - bodyRadius * 0.5, center.Y - bodyRadius),
-            bodyRadius * 0.3,
-            new Point(center.X - bodyRadius * 0.2, center.Y - bodyRadius - legHeight),
-            Brushes.DarkGreen, 1, Brushes.DarkGreen);
+        var legWidth = bodyRadius * 0.3;
+
+        var leftLegTopLeft = new Point(center.X - bodyRadius * 0.5, center.Y - bodyRadius);
+        var leftLegBottomRight = new Point(leftLegTopLeft.X + legWidth, leftLegTopLeft.Y - legHeight);
+        LeftLeg = new Rectangle(canvas, leftLegTopLeft, leftLegBottomRight, Brushes.DarkGreen, 1, Brushes.DarkGreen);
         Segments.AddRange(LeftLeg.Segments);
 
-        RightLeg = new Rectangle(
-            canvas,
-            new Point(center.X + bodyRadius * 0.2, center.Y - bodyRadius),
-            bodyRadius * 0.3,
-            new Point(center.X + bodyRadius * 0.5, center.Y - bodyRadius - legHeight),
-            Brushes.DarkGreen, 1, Brushes.DarkGreen);
+        var rightLegTopLeft = new Point(center.X + bodyRadius * 0.2, center.Y - bodyRadius);
+        var rightLegBottomRight = new Point(rightLegTopLeft.X + legWidth, rightLegTopLeft.Y - legHeight);
+        RightLeg = new Rectangle(canvas, rightLegTopLeft, rightLegBottomRight, Brushes.DarkGreen, 1, Brushes.DarkGreen);
         Segments.AddRange(RightLeg.Segments);
 
         // Arms
         var armHeight = bodyRadius * 0.6;
         var armWidth = bodyRadius * 0.2;
 
-        LeftArm = new Rectangle(
-            canvas,
-            new Point(center.X - bodyRadius, center.Y),
-            armWidth,
-            new Point(center.X - bodyRadius + armWidth, center.Y - armHeight),
-            Brushes.DarkRed, 1, Brushes.DarkRed);
+        var leftArmTopLeft = new Point(center.X - bodyRadius, center.Y);
+        var leftArmBottomRight = new Point(leftArmTopLeft.X + armWidth, leftArmTopLeft.Y - armHeight);
+        LeftArm = new Rectangle(canvas, leftArmTopLeft, leftArmBottomRight, Brushes.DarkRed, 1, Brushes.DarkRed);
         Segments.AddRange(LeftArm.Segments);
 
-        RightArm = new Rectangle(
-            canvas,
-            new Point(center.X + bodyRadius - armWidth, center.Y),
-            armWidth,
-            new Point(center.X + bodyRadius, center.Y - armHeight),
-            Brushes.DarkRed, 1, Brushes.DarkRed);
+        var rightArmTopLeft = new Point(center.X + bodyRadius - armWidth, center.Y);
+        var rightArmBottomRight = new Point(rightArmTopLeft.X + armWidth, rightArmTopLeft.Y - armHeight);
+        RightArm = new Rectangle(canvas, rightArmTopLeft, rightArmBottomRight, Brushes.DarkRed, 1, Brushes.DarkRed);
         Segments.AddRange(RightArm.Segments);
     }
 }
