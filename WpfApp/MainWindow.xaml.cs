@@ -14,7 +14,7 @@ using WpfApp.TwoDimension.Animations;
 using WpfApp.TwoDimension.Models;
 using WpfApp.TwoDimension.Samples;
 using WpfApp.TwoDimension.Shapes;
-using System.Linq; 
+using System.Linq;
 using WpfApp.Animation;
 
 namespace WpfApp
@@ -38,13 +38,14 @@ namespace WpfApp
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
-            
-            _animator.Start(); 
+            _animator.Start();
         }
+
         private void RunSceneAnimation_Click(object sender, RoutedEventArgs e)
         {
             SceneAnimations.StartCharacterCoinScene(canvas2D, _animator);
         }
+
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             if (Mode2DButton != null)
@@ -119,6 +120,7 @@ namespace WpfApp
                     Mode3DButton.IsChecked = true;
             }
         }
+
         private void CameraViewComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (canvas3D == null || CameraViewComboBox == null || CameraViewComboBox.SelectedItem is not ComboBoxItem item)
@@ -149,7 +151,7 @@ namespace WpfApp
             if (ShapeComboBox == null) return;
             foreach (ComboBoxItem item in ShapeComboBox.Items)
             {
-                string? tag = item.Tag?.ToString(); // Changed to nullable string
+                string? tag = item.Tag?.ToString();
                 if (mode == "2D" && tag == "3D")
                     item.Visibility = Visibility.Collapsed;
                 else if (mode == "3D" && tag == "2D")
@@ -312,7 +314,6 @@ namespace WpfApp
             InputFieldsPanel.Children.Add(panel);
         }
 
-        // New: Add XY input field for grouped X/Y entry
         private void AddXYInputField(string label)
         {
             if (InputFieldsPanel == null) return;
@@ -339,7 +340,7 @@ namespace WpfApp
 
         private void _shapeSelectedByClick(Point clickPoint)
         {
-            const double threshold = 5.0; // bán kính tối đa tính là "gần"
+            const double threshold = 5.0;
 
             ShapeContainer? found = null;
             foreach (var shape in _shapes)
@@ -360,7 +361,7 @@ namespace WpfApp
             }
 
             _selectedShape = found;
-            _isSelectionMode = (_selectedShape != null); // Update selection mode
+            _isSelectionMode = (_selectedShape != null);
             RedrawAllShapes();
         }
 
@@ -430,7 +431,7 @@ namespace WpfApp
                     break;
                 case "Character1":
                     var char1Center = _pendingPoints[0];
-                    newShape = new Character1(canvas2D, char1Center, 40); 
+                    newShape = new Character1(canvas2D, char1Center, 40);
                     break;
                 case "Coin":
                     var coinCenter = _pendingPoints[0];
@@ -438,7 +439,7 @@ namespace WpfApp
                     break;
                 case "Heart":
                     var heartCenter = _pendingPoints[0];
-                    newShape = new Heart(canvas2D, heartCenter, 30, Brushes.Red, 2, Brushes.Pink); 
+                    newShape = new Heart(canvas2D, heartCenter, 30, Brushes.Red, 2, Brushes.Pink);
                     break;
             }
 
@@ -725,6 +726,7 @@ namespace WpfApp
                 }
             }
         }
+
         private void DeleteShape3D(ShapeContainer3D shape)
         {
             if (shape == null) return;
@@ -734,7 +736,28 @@ namespace WpfApp
             }
             _shapes3D.Remove(shape);
             _animator.RemoveAnimationsForShape(shape);
+            RedrawAllShapes3D(); // Always redraw after deletion
         }
+
+        private void RedrawAllShapes3D()
+        {
+            if (canvas3D == null)
+                return;
+
+            canvas3D.ClearAll();
+
+            foreach (var shape in _shapes3D)
+            {
+                foreach (var segment in shape.Segments)
+                {
+                    if (segment is PointSegment3D point)
+                        canvas3D.AddPoint(point.Position, point.Color, point.Size);
+                    else if (segment is LineSegment3D line)
+                        canvas3D.AddLine(line.StartPoint, line.EndPoint, line.Color, line.Thickness * 2);
+                }
+            }
+        }
+
 
         private void DeleteShapeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -743,7 +766,7 @@ namespace WpfApp
                 if (_selectedShape != null && _shapes.Contains(_selectedShape))
                 {
                     _shapes.Remove(_selectedShape);
-                    _selectedShape = null; 
+                    _selectedShape = null;
                     _isSelectionMode = false;
                 }
                 else if (_shapes.Count > 0)
@@ -755,6 +778,7 @@ namespace WpfApp
                     MessageBox.Show("Không có hình nào để xóa.");
                     return;
                 }
+                RedrawAllShapes();
             }
             else if (canvas3D != null && canvas3D.Visibility == Visibility.Visible)
             {
@@ -768,8 +792,8 @@ namespace WpfApp
                     MessageBox.Show("Không có hình 3D nào để xóa.");
                 }
             }
-            RedrawAllShapes();
         }
+
         private ShapeContainer? GetLastShape()
         {
             return _shapes.Count > 0 ? _shapes[^1] : null;
@@ -777,7 +801,7 @@ namespace WpfApp
 
         private async void TranslateLeft_Click(object sender, RoutedEventArgs e)
         {
-            var shape = _selectedShape ?? GetLastShape(); 
+            var shape = _selectedShape ?? GetLastShape();
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(-50, 0));
             RedrawAllShapes();
@@ -796,7 +820,7 @@ namespace WpfApp
             var shape = _selectedShape ?? GetLastShape();
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(0, 50));
-            RedrawAllShapes(); 
+            RedrawAllShapes();
         }
 
         private async void TranslateDown_Click(object sender, RoutedEventArgs e)
@@ -805,7 +829,6 @@ namespace WpfApp
             if (shape != null)
                 await ShapeAnimation.AnimateTranslate(shape, new Vector(0, -50));
             RedrawAllShapes();
-
         }
 
         private async void RotateOrigin_Click(object sender, RoutedEventArgs e)
@@ -850,13 +873,13 @@ namespace WpfApp
             Point center = GetShapeCenter(shape);
             await ShapeAnimation.AnimateScale(shape, center, 0.8, 0.8);
             RedrawAllShapes();
-
         }
+
         private async void SymmetricButton_Click(object sender, RoutedEventArgs e)
         {
             if (_shapes.Count == 0) return;
 
-            ShapeContainer shape = _selectedShape ?? _shapes[0]; 
+            ShapeContainer shape = _selectedShape ?? _shapes[0];
             Point symmetricPoint = new Point(0, 0);
             await ShapeAnimation.AnimateSymmetric(shape, symmetricPoint);
             RedrawAllShapes();
@@ -869,7 +892,6 @@ namespace WpfApp
             double centerY = allPoints.Average(p => p.Y);
             return new Point(centerX, centerY);
         }
-
 
         private void RedrawAllShapes()
         {
