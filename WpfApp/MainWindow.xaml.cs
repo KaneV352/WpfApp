@@ -43,6 +43,7 @@ namespace WpfApp
 
         private void RunSceneAnimation_Click(object sender, RoutedEventArgs e)
         {
+            _animator.ClearAllAnimations();
             SceneAnimations.StartCharacterCoinScene(canvas2D, _animator);
         }
 
