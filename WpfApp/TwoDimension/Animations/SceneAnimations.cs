@@ -17,7 +17,7 @@ public static class SceneAnimations
         var moveDuration = TimeSpan.FromSeconds(10);
         var liftOffset = new Point(0, 20);
         var liftDuration = TimeSpan.FromSeconds(0.1);
-        var liftDelay = moveDuration + TimeSpan.FromSeconds(1);
+        var liftDelay = moveDuration - TimeSpan.FromSeconds(1);
 
         // Loop scale coin trong 10s
         var coinLoopScale = new LoopScaleAnimation(
